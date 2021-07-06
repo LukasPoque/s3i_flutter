@@ -2,6 +2,9 @@
 
 A library that makes it easy to communicate with the S³I (Smart Systems Service Infrastructure of the KWH4.0).
 
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/LukasPoque/s3i_flutter/Test%20Project?style=for-the-badge&label=tests&labelColor=333940&logo=github)](https://github.com/LukasPoque/s3i_flutter/actions) [![Isuess](https://img.shields.io/github/issues/LukasPoque/s3i_flutter?style=for-the-badge&labelColor=333940&logo=AdGuard)](https://github.com/LukasPoque/s3i_flutter/issues) [![GitHub](https://img.shields.io/github/license/LukasPoque/s3i_flutter?style=for-the-badge&color=%23007A88&labelColor=333940&logo=apache)](https://github.com/LukasPoque/s3i_flutter/blob/master/LICENSE) [![Made With Flutter](https://img.shields.io/badge/made%20with-Flutter-51c3f8.svg?style=for-the-badge&labelColor=333940&logo=dart)](http://flutter.dev)
+
+
 ## Installing
 
 Add it to your `pubspec.yaml` file:
