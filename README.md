@@ -23,3 +23,21 @@ If you are not familiar with the S³I concepts, please consider reading the [KWH
 ## Usage
 
 TODO: add basic example
+
+## Project Structure
+
+TODO: s3i core / entry
+
+### directory
+
+### identity_provider
+
+### policy
+
+### broker
+
+### exceptions
+
+### query
+
+### utils
