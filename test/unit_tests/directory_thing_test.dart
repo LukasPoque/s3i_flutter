@@ -60,7 +60,7 @@ void mainThingTests() {
       }
     }""";
     expect(() => Thing.fromJson(jsonDecode(json)),
-        throwsA(predicate((e) => e is CastError)));
+        throwsA(predicate((e) => e is TypeError)));
   });
 
   test('Load defaultEndpoint wrong element thing', () {
@@ -72,7 +72,7 @@ void mainThingTests() {
       }
     }""";
     expect(() => Thing.fromJson(jsonDecode(json)),
-        throwsA(predicate((e) => e is CastError)));
+        throwsA(predicate((e) => e is TypeError)));
   });
 
   test('Load complex thing 1 - Error value', () {
@@ -126,7 +126,7 @@ void mainThingTests() {
         }
     }
     }""";
-    expect(() => Thing.fromJson(jsonDecode(json)), throwsA(predicate((e) => e is CastError)));
+    expect(() => Thing.fromJson(jsonDecode(json)), throwsA(predicate((e) => e is TypeError)));
   });
 
   test('Complex thing 2', () {
