@@ -1,4 +1,4 @@
-name: Main Tests
+name: ProjectTest
 
 on:
   push:
