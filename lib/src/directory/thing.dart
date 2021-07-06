@@ -103,25 +103,28 @@ class Thing extends Entry {
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newJson = Map();
     newJson[JsonKey.thingId] = id;
-    if (name != null) newJson[JsonKey.name] = name;
+    newJson[JsonKey.policyId] = id;
+    Map<String, dynamic> attributesMap = Map();
+    if (name != null) attributesMap[JsonKey.name] = name;
     if (thingType != null)
-      newJson[JsonKey.thingType] = _thingTypeToString(thingType!);
-    if (dataModel != null) newJson[JsonKey.dataModel] = dataModel;
-    if (publicKey != null) newJson[JsonKey.publicKey] = publicKey;
+      attributesMap[JsonKey.thingType] = _thingTypeToString(thingType!);
+    if (dataModel != null) attributesMap[JsonKey.dataModel] = dataModel;
+    if (publicKey != null) attributesMap[JsonKey.publicKey] = publicKey;
     if (allEndpoints != null)
-      newJson[JsonKey.allEndpoints] =
+      attributesMap[JsonKey.allEndpoints] =
           allEndpoints!.map((e) => e.endpoint).toList();
     if (defaultEndpoint != null)
-      newJson[JsonKey.defaultEndpoint] = defaultEndpoint;
-    if (defaultHMI != null) newJson[JsonKey.defaultHMI] = defaultHMI;
-    if (location != null) newJson[JsonKey.location] = location!.toJson();
-    if (ownedBy != null) newJson[JsonKey.ownedBy] = ownedBy;
+      attributesMap[JsonKey.defaultEndpoint] = defaultEndpoint;
+    if (defaultHMI != null) attributesMap[JsonKey.defaultHMI] = defaultHMI;
+    if (location != null) attributesMap[JsonKey.location] = location!.toJson();
+    if (ownedBy != null) attributesMap[JsonKey.ownedBy] = ownedBy;
     if (administratedBy != null)
-      newJson[JsonKey.administratedBy] = administratedBy;
-    if (usedBy != null) newJson[JsonKey.usedBy] = usedBy;
-    if (represents != null) newJson[JsonKey.represents] = represents;
+      attributesMap[JsonKey.administratedBy] = administratedBy;
+    if (usedBy != null) attributesMap[JsonKey.usedBy] = usedBy;
+    if (represents != null) attributesMap[JsonKey.represents] = represents;
     if (thingStructure != null)
-      newJson[JsonKey.thingStructure] = thingStructure!.toJson();
+      attributesMap[JsonKey.thingStructure] = thingStructure!.toJson();
+    if (attributesMap.isNotEmpty) newJson[JsonKey.attributes] = attributesMap;
     return newJson;
   }
 }

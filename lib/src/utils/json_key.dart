@@ -1,6 +1,7 @@
 /// Stores universal json keys for Entries.
 class JsonKey {
   static const String thingId = "thingId";
+  static const String policyId = "policyId";
   static const String attributes = "attributes";
   static const String items = "items";
   static const String cursor = "cursor";
