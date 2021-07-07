@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:s3i_flutter/src/directory/thing.dart';
+import 'package:s3i_flutter/s3i_flutter.dart';
 
 void mainThingTests() {
   test('Load minimal thing', () {
@@ -126,7 +126,8 @@ void mainThingTests() {
         }
     }
     }""";
-    expect(() => Thing.fromJson(jsonDecode(json)), throwsA(predicate((e) => e is TypeError)));
+    expect(() => Thing.fromJson(jsonDecode(json)),
+        throwsA(predicate((e) => e is TypeError)));
   });
 
   test('Complex thing 2', () {
@@ -323,8 +324,8 @@ void mainThingTests() {
     //final String newJson = jsonEncode(thing.toJson());
     //TODO: create second thing from newJson and compare
   });
-
 }
+
 void main() {
   mainThingTests();
 }
