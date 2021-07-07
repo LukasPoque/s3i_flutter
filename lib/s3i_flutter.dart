@@ -12,3 +12,9 @@ export 'src/exceptions/s3i_exception.dart';
 export 'src/exceptions/invalid_json_schema_exception.dart';
 export 'src/exceptions/json_missing_key_exception.dart';
 export 'src/exceptions/parse_exception.dart';
+//query
+export 'src/query/query_assembler.dart';
+export 'src/query/field_query.dart';
+export 'src/query/namespace_query.dart';
+export 'src/query/option_query.dart';
+export 'src/query/rql_query.dart';
