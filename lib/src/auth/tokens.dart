@@ -4,7 +4,7 @@ abstract class Token {
   final String originalToken;
   late Map<String, dynamic> decodedToken;
 
-  // throws FormatException if _originalToken is no valid JWT
+  /// Throws [FormatException] if [originalToken] is no valid JWT
   Token(this.originalToken) {
     decodedToken = JwtDecoder.decode(originalToken);
   }
