@@ -1,12 +1,19 @@
-/// Stores universal json keys for Entries.
+/// Stores universal string keys
 class JsonKey {
+// ditto
   static const String thingId = "thingId";
   static const String policyId = "policyId";
   static const String attributes = "attributes";
   static const String items = "items";
   static const String cursor = "cursor";
 
-//(f)ml40 specific keys
+// keycloak
+  static const String grantType = "grant_type";
+  static const String clientId = "client_id";
+  static const String clientSecret = "client_secret";
+  static const String refreshToken = "refresh_token";
+
+// (f)ml40 specific keys
   static const String name = "name";
   static const String thingType = "type";
   static const String dataModel = "dataModel";
