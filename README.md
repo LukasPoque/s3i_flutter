@@ -17,7 +17,7 @@ Install packages from the command line
 flutter packages get
 ```
 
-If you like this package, consider supporting it by giving it a star on [GitHub](https://github.com/LukasPoque/s3i_flutter) and a like on [pub.dev](https://pub.dev/packages/s3i_flutter) :heart:
+If you like this package, consider supporting it by giving a star on [GitHub](https://github.com/LukasPoque/s3i_flutter) and a like on [pub.dev](https://pub.dev/packages/s3i_flutter) :heart:
 
 ## About S³I and KWH4.0
 
@@ -33,7 +33,7 @@ TODO: s3i core / entry
 
 ### directory
 
-### identity_provider
+### auth
 
 ### policy
 
