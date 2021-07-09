@@ -102,6 +102,7 @@ class OAuthProxyFlow extends AuthenticationManager {
           try {
             _parseTokenResponseBody(response.body);
             //_accessToken and _refreshToken should be valid if this code is reached
+            if(onAuthSuccess != null) onAuthSuccess!();
             return _accessToken!;
             //TODO: test _accessToken.isNotExpired
           } catch (e) {
