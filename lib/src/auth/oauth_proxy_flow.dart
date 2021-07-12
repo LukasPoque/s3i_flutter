@@ -17,6 +17,9 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 class OAuthProxyFlow extends AuthenticationManager {
   /// Number of retries (100) to pickup the token bundle from the OAuthProxy
   static final int maxRetryPickup = 100;
+  /// Delay between each retry. This time * [maxRetryPickup] is the maximum
+  /// time the user should take to login.
+  static final int retryWaitingTimeMilliSec = 200;
   AccessToken? _accessToken;
   RefreshToken? _refreshToken;
   final Uri refreshTokenEndpoint = Uri.parse(
@@ -24,7 +27,7 @@ class OAuthProxyFlow extends AuthenticationManager {
   final String authProxyBase = "https://auth.s3i.vswf.dev";
 
   /// Is invoked when the OAuthProxyFlow needs to redirect to the S3I-OAuthProxy website
-  Function(Uri) openUrlCallback;
+  Future<void> Function(Uri) openUrlCallback;
 
   /// Is invoked if the user is authenticated correctly
   VoidCallback? onAuthSuccess;
@@ -34,8 +37,8 @@ class OAuthProxyFlow extends AuthenticationManager {
   // Function(RefreshToken)? onNewRefreshToken;
   // void setRefreshToken(RefreshToken token){}
 
-  OAuthProxyFlow(ClientIdentity clientIdentity, this.openUrlCallback,
-      {this.onAuthSuccess})
+  OAuthProxyFlow(ClientIdentity clientIdentity, {required this.openUrlCallback,
+      this.onAuthSuccess})
       : super(clientIdentity);
 
   /// Returns a valid AccessToken for the [_clientIdentity]
@@ -79,7 +82,7 @@ class OAuthProxyFlow extends AuthenticationManager {
         "/initialize/${clientIdentity.id}/${clientIdentity.secret}";
     if (scopes.isNotEmpty) authInit += "/" + scopes.join(" ");
     //send start auth request to oAuthProxy
-    var response = await http.post(Uri.parse(authInit));
+    var response = await http.get(Uri.parse(authInit));
     if (response.statusCode != 200) throw NetworkResponseException(response);
     try {
       final Map<String, dynamic> initBody = jsonDecode(response.body);
@@ -90,13 +93,14 @@ class OAuthProxyFlow extends AuthenticationManager {
         //build url for interaction with the user and send it to the application
         final authenticatorUrl =
             authProxyBase + initBody["redirect_url"].toString();
-        openUrlCallback(Uri.parse(authenticatorUrl));
+        await openUrlCallback(Uri.parse(authenticatorUrl));
         //start polling at pickup endpoint
         final pollingUrl = authProxyBase +
             "/pickup/${initBody["proxy_user_identifier"].toString()}/${initBody["proxy_secret"].toString()}";
         final pickUpClient = http.Client();
         for (int i = 0; i < maxRetryPickup; i++) {
-          response = await pickUpClient.post(Uri.parse(pollingUrl));
+          response = await pickUpClient.get(Uri.parse(pollingUrl));
+          await Future.delayed(Duration(milliseconds: retryWaitingTimeMilliSec));
           if (response.statusCode != 200)
             throw NetworkResponseException(response);
           try {
@@ -156,8 +160,8 @@ class OAuthProxyFlow extends AuthenticationManager {
   void _parseTokenResponseBody(String tokenBundle) {
     final Map<String, dynamic> jsonB = jsonDecode(tokenBundle);
     if (jsonB["access_token"] != null && jsonB["refresh_token"] != null) {
-      _accessToken = jsonB["access_token"];
-      _refreshToken = jsonB["refresh_token"];
+      _accessToken = AccessToken(jsonB["access_token"]);
+      _refreshToken = RefreshToken(jsonB["refresh_token"]);
       return;
     }
     throw InvalidJsonSchemaException(
