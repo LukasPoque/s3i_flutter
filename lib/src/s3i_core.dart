@@ -53,7 +53,7 @@ class S3ICore {
     headers.addAll({"Authorization": "Bearer " + token.originalToken});
     headers.addAll(additionalHeaderFields);
     return _directoryClient.put(Uri.parse(directoryUrl + path),
-        headers: headers, body: jsonBody);
+        headers: headers, body: jsonEncode(jsonBody));
   }
 
   Future<Thing> getThing(String thingId, {FieldQuery? fields}) async {
@@ -70,12 +70,11 @@ class S3ICore {
     return Thing.fromJson(jsonDecode(response.body));
   }
 
-  Future<Thing> putThing(Thing thing) async {
+  Future<void> putThing(Thing thing) async {
     var response =
         await putDirectory("/things/" + thing.id, jsonBody: thing.toJson());
-    if (response.statusCode != 204 || response.statusCode != 201) {
+    if (response.statusCode != 204 && response.statusCode != 201) {
       throw NetworkResponseException(response);
     }
-    return Thing.fromJson(jsonDecode(response.body));
   }
 }
