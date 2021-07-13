@@ -12,18 +12,32 @@ import 'package:s3i_flutter/src/exceptions/max_retry_exception.dart';
 import 'package:s3i_flutter/src/exceptions/network_response_exception.dart';
 import 'package:s3i_flutter/src/utils/json_key.dart';
 
-/// Uses the S3I-OAuthProxy to obtain a access and refresh token.
+/// Uses the S3I-OAuthProxy to obtain an access and refresh token.
 /// Does not refreshes the token automatically, only if [getAccessToken] is called and the accessToken is expired.
 class OAuthProxyFlow extends AuthenticationManager {
-  /// Number of retries (100) to pickup the token bundle from the OAuthProxy
-  static final int maxRetryPickup = 100;
-  /// Delay between each retry. This time * [maxRetryPickup] is the maximum
-  /// time the user should take to login.
-  static final int retryWaitingTimeMilliSec = 200;
+  OAuthProxyFlow(ClientIdentity clientIdentity,
+      {required this.openUrlCallback,
+        this.onAuthSuccess,
+        this.maxRetryPickup = 100,
+        this.retryWaitingTimeMilliSec = 200,
+        List<String> scopes = const []})
+      : super(clientIdentity, scopes: scopes);
+
   AccessToken? _accessToken;
   RefreshToken? _refreshToken;
+
+  /// Number of retries (default: 100) to pickup the token bundle from the OAuthProxy
+  final int maxRetryPickup;
+
+  /// Delay between each retry (default: 200ms). This time * [maxRetryPickup] is the maximum
+  /// time the user should take to login.
+  final int retryWaitingTimeMilliSec;
+
+  /// Token endpoint of the S3I IdentityProvider
   final Uri refreshTokenEndpoint = Uri.parse(
       "https://idp.s3i.vswf.dev/auth/realms/KWH/protocol/openid-connect/token");
+
+  /// Base Url of the S3I-OAuthProxy
   final String authProxyBase = "https://auth.s3i.vswf.dev";
 
   /// Is invoked when the OAuthProxyFlow needs to redirect to the S3I-OAuthProxy website
@@ -36,10 +50,6 @@ class OAuthProxyFlow extends AuthenticationManager {
   // Is invoked if a new refresh token is available. Could be used to store the token in an external database.
   // Function(RefreshToken)? onNewRefreshToken;
   // void setRefreshToken(RefreshToken token){}
-
-  OAuthProxyFlow(ClientIdentity clientIdentity, {required this.openUrlCallback,
-      this.onAuthSuccess})
-      : super(clientIdentity);
 
   /// Returns a valid AccessToken for the [_clientIdentity]
   ///
@@ -78,6 +88,7 @@ class OAuthProxyFlow extends AuthenticationManager {
       }
     }
     //full flow
+    _invalidateLoginState();
     String authInit = authProxyBase +
         "/initialize/${clientIdentity.id}/${clientIdentity.secret}";
     if (scopes.isNotEmpty) authInit += "/" + scopes.join(" ");
@@ -96,17 +107,19 @@ class OAuthProxyFlow extends AuthenticationManager {
         await openUrlCallback(Uri.parse(authenticatorUrl));
         //start polling at pickup endpoint
         final pollingUrl = authProxyBase +
-            "/pickup/${initBody["proxy_user_identifier"].toString()}/${initBody["proxy_secret"].toString()}";
+            "/pickup/${initBody["proxy_user_identifier"]
+                .toString()}/${initBody["proxy_secret"].toString()}";
         final pickUpClient = http.Client();
         for (int i = 0; i < maxRetryPickup; i++) {
           response = await pickUpClient.get(Uri.parse(pollingUrl));
-          await Future.delayed(Duration(milliseconds: retryWaitingTimeMilliSec));
+          await Future.delayed(
+              Duration(milliseconds: retryWaitingTimeMilliSec));
           if (response.statusCode != 200)
             throw NetworkResponseException(response);
           try {
             _parseTokenResponseBody(response.body);
             //_accessToken and _refreshToken should be valid if this code is reached
-            if(onAuthSuccess != null) onAuthSuccess!();
+            if (onAuthSuccess != null) onAuthSuccess!();
             return _accessToken!;
             //TODO: test _accessToken.isNotExpired
           } catch (e) {
@@ -119,10 +132,12 @@ class OAuthProxyFlow extends AuthenticationManager {
       }
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
-          "S3I-OAuthProxy returned invalid json (${e.toString()})", response.body);
+          "S3I-OAuthProxy returned invalid json (${e.toString()})",
+          response.body);
     } on FormatException catch (e) {
       throw InvalidJsonSchemaException(
-          "S3I-OAuthProxy returned invalid json (${e.toString()})", response.body);
+          "S3I-OAuthProxy returned invalid json (${e.toString()})",
+          response.body);
     }
     throw MaxRetryException("Can't receive token bundle from OAuthProxy");
   }

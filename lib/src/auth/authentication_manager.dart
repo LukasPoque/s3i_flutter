@@ -4,10 +4,10 @@ import 'package:s3i_flutter/src/auth/tokens.dart';
 /// Base class for the different login approaches
 abstract class AuthenticationManager {
   final ClientIdentity clientIdentity;
-  List<String> scopes = [];
+  List<String> scopes;
   //TODO: use discovery endpoint
 
-  AuthenticationManager(this.clientIdentity);
+  AuthenticationManager(this.clientIdentity, {this.scopes = const []});
 
   /// Returns a valid [AccessToken] for the [clientIdentity]
   /// which is at least valid for the time specified in [tokenValidBuffer].
