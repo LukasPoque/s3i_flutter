@@ -1,0 +1,25 @@
+name: example
+description: Example application of the S3I Flutter packlage.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  s3i_flutter:
+    path: ../
+  url_launcher: 6.0.9
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
