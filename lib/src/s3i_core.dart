@@ -11,7 +11,9 @@ class S3ICore {
   late Client _directoryClient;
 
   S3ICore(this.authManager,
-      {this.directoryUrl = "https://dir.s3i.vswf.dev/api/2"});
+      {this.directoryUrl = "https://dir.s3i.vswf.dev/api/2"}) {
+    _directoryClient = Client();
+  }
 
   Future<AccessToken> login() async {
     return authManager.getAccessToken();
