@@ -1,3 +1,7 @@
+## 0.2.1
+
+Add web support and fix formatting + README.
+
 ## 0.2.0
 
 Add Policy classes.
