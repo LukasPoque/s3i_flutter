@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -67,7 +66,7 @@ class OAuthProxyFlow extends AuthenticationManager {
       //check if _refreshToken is valid and try to get a new access token
       if (_refreshToken!.isNotExpired(timeBufferInSeconds: tokenValidBuffer)) {
         var response = await http.post(refreshTokenEndpoint, headers: {
-          HttpHeaders.contentTypeHeader: "application/x-www-form-urlencoded"
+          "content-type": "application/x-www-form-urlencoded"
         }, body: {
           JsonKey.grantType: "refresh_token",
           JsonKey.clientId: clientIdentity.id,
