@@ -12,7 +12,7 @@
   <a href="https://github.com/LukasPoque/s3i_flutter/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/LukasPoque/s3i_flutter?style=for-the-badge&color=%23007A88&labelColor=333940&logo=apache">
   </a>
-  <a href="http://flutter.dev">
+  <a href="https://flutter.dev">
     <img src="https://img.shields.io/badge/made%20with-Flutter-51c3f8.svg?style=for-the-badge&labelColor=333940&logo=dart">
   </a>
 </p>
