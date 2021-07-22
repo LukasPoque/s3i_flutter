@@ -51,9 +51,12 @@ void mainPolicyTest() {
     }
   };
 
-  test('Load default policy', () {
+  test('Load default policy + manipulate observer', () {
     PolicyEntry p = PolicyEntry.fromJson(policyJson);
-    expect(p.getAllOwners().length, 2);
+    expect(p.getAllObservers().length, 4);
+    p.insertObserver(PolicySubject("nginx:test_observer"));
+    expect(p.getAllObservers().length, 5);
+    p.removeObserver("nginx:/iWald");
     expect(p.getAllObservers().length, 4);
   });
 
