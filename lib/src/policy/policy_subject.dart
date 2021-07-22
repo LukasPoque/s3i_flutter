@@ -10,7 +10,7 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 /// > defining the subject “issuer” (so which party issued the authentication)
 /// > and an actual subject, separated with a colon.
 class PolicySubject implements JsonSerializableObject {
-  PolicySubject(this._id, {this.expiringTimestamp, this.type});
+  PolicySubject(this.id, {this.expiringTimestamp, this.type});
 
   ///  The subject-id (WHO gets the permissions granted/revoked).
   ///
@@ -20,7 +20,7 @@ class PolicySubject implements JsonSerializableObject {
   ///  - a specific user id
   ///
   /// Use "nginx:<ID>" as pattern.
-  String _id;
+  final String id;
 
   /// The optional validation date of this subject.
   ///
@@ -43,7 +43,7 @@ class PolicySubject implements JsonSerializableObject {
       if (json.containsKey(JsonKey.expiry)) {
         pS.expiringTimestamp = DateTime.parse(json[JsonKey.expiry]);
       }
-      pS.type = json.containsKey(JsonKey.type) ? json[JsonKey.type] : null;
+      pS.type = json[JsonKey.type];
     } on FormatException catch (e) {
       //datetime parsing failed
       throw InvalidJsonSchemaException(e.message, json.toString());
@@ -70,11 +70,6 @@ class PolicySubject implements JsonSerializableObject {
 
   @override
   String toString() {
-    return "PolicySubject($_id:[$expiringTimestamp | $type])";
-  }
-
-  /// Returns the value of [_id].
-  String getId() {
-    return _id;
+    return "PolicySubject($id:[$expiringTimestamp | $type])";
   }
 }

@@ -19,16 +19,15 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 /// (thing:/, policy:/, message:/)
 /// - observer: An observer has only READ permission to the thing part (thing:/)
 class PolicyEntry extends Entry {
-  PolicyEntry(String id, {Map<String, PolicyGroup> groups = const {}})
-      : super(id) {
-    _groups = groups;
+  PolicyEntry(String id, {Map<String, PolicyGroup>? entryGroups}) : super(id) {
+    _groups = {...?entryGroups};
   }
 
   /// The key of the special `owner` group.
-  static const String ownerGroupKey = "owner";
+  static final String ownerGroupKey = "owner";
 
   /// The key of the special `observer` group.
-  static const String observerGroupKey = "observer";
+  static final String observerGroupKey = "observer";
 
   /// The policy groups of this [PolicyEntry].
   ///
@@ -73,7 +72,7 @@ class PolicyEntry extends Entry {
     if (_groups.isNotEmpty) {
       Map<String, dynamic> gro = _groups
           .map((key, value) => MapEntry<String, dynamic>(key, value.toJson()));
-      newJson[JsonKey.subjects] = gro;
+      newJson[JsonKey.entries] = gro;
     }
     return newJson;
   }
@@ -101,7 +100,7 @@ class PolicyEntry extends Entry {
   /// If [PolicyGroup._name] is already a key in [_groups], the old group
   /// gets overwritten.
   void insertGroup(PolicyGroup group) {
-    _groups[group.getName()] = group;
+    _groups[group.name] = group;
   }
 
   /// Removes [name] and its associated [PolicyGroup] from [_groups].
@@ -129,17 +128,17 @@ class PolicyEntry extends Entry {
     if (!_groups.containsKey(ownerGroupKey)) {
       Map<String, PolicyResource> resource = {
         "thing:/": PolicyResource("thing:/",
-            grant: {PermissionType.read, PermissionType.write}),
+            grants: {PermissionType.read, PermissionType.write}),
         "policy:/": PolicyResource("policy:/",
-            grant: {PermissionType.read, PermissionType.write}),
+            grants: {PermissionType.read, PermissionType.write}),
         "message:/": PolicyResource("message:/",
-            grant: {PermissionType.read, PermissionType.write})
+            grants: {PermissionType.read, PermissionType.write})
       };
       //TODO: add s3i admin entry?
       insertGroup(PolicyGroup(ownerGroupKey,
-          subjects: {owner.getId(): owner}, resources: resource));
+          policySubjects: {owner.id: owner}, policyResources: resource));
     } else {
-      _groups[ownerGroupKey]!.subjects[owner.getId()] = owner;
+      _groups[ownerGroupKey]!.subjects[owner.id] = owner;
     }
   }
 
@@ -169,12 +168,12 @@ class PolicyEntry extends Entry {
   void insertObserver(PolicySubject observer) {
     if (!_groups.containsKey(observerGroupKey)) {
       Map<String, PolicyResource> resource = {
-        "thing:/": PolicyResource("thing:/", grant: {PermissionType.read})
+        "thing:/": PolicyResource("thing:/", grants: {PermissionType.read})
       };
       insertGroup(PolicyGroup(observerGroupKey,
-          subjects: {observer.getId(): observer}, resources: resource));
+          policySubjects: {observer.id: observer}, policyResources: resource));
     } else {
-      _groups[observerGroupKey]!.subjects[observer.getId()] = observer;
+      _groups[observerGroupKey]!.subjects[observer.id] = observer;
     }
   }
 

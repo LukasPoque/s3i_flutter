@@ -11,15 +11,19 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 /// Default groups in the S3I-Concept are `owner` and `observer`.
 /// See [PolicyEntry] for more information.
 class PolicyGroup implements JsonSerializableObject {
-  PolicyGroup(this._name,
-      {this.subjects = const {}, this.resources = const {}});
+  PolicyGroup(this.name,
+      {Map<String, PolicySubject>? policySubjects,
+      Map<String, PolicyResource>? policyResources}) {
+    subjects = {...?policySubjects};
+    resources = {...?policyResources};
+  }
 
   /// The identifier of this [PolicyGroup].
   ///
   /// This could be everything but should be self explanatory
   /// and consider readability.
   /// Default names in the S3I-Concept are `owner` and `observer`.
-  String _name;
+  final String name;
 
   /// The subjects of this [PolicyGroup].
   ///
@@ -27,12 +31,12 @@ class PolicyGroup implements JsonSerializableObject {
   /// > on the resources of a policy entry.
   ///
   /// The key is the id of the subject.
-  Map<String, PolicySubject> subjects;
+  late Map<String, PolicySubject> subjects;
 
   /// The protected resources of this [PolicyGroup].
   ///
   /// The key is the path of the resource.
-  Map<String, PolicyResource> resources;
+  late Map<String, PolicyResource> resources;
 
   /// Returns a [PolicyGroup] with the [name] and the [subjects] and [resources]
   /// specified in the given [json].
@@ -84,11 +88,6 @@ class PolicyGroup implements JsonSerializableObject {
 
   @override
   String toString() {
-    return "PolicyGroup($_name {subjects: $subjects} {resources $resources})";
-  }
-
-  /// Returns the value stored in [_name].
-  String getName() {
-    return _name;
+    return "PolicyGroup($name {subjects: $subjects} {resources $resources})";
   }
 }

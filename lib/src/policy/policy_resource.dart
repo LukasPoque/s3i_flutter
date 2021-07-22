@@ -21,23 +21,27 @@ enum PermissionType { read, write, execute }
 /// For more information see:
 /// https://www.eclipse.org/ditto/basic-policy.html#which-resources-can-be-controlled
 class PolicyResource implements JsonSerializableObject {
-  PolicyResource(this._path, {this.grant = const {}, this.revoke = const {}});
+  PolicyResource(this.path,
+      {Set<PermissionType>? grants, Set<PermissionType>? revokes}) {
+    grant = {...?grants};
+    revoke = {...?revokes};
+  }
 
   /// The path to the resource.
   ///
   /// This could be something general like `policy:/` or a mor specific path
   /// like `thing:/features/featureX/properties/location`.
-  String _path;
+  final String path;
 
   /// The allowed actions on this resource.
   ///
   /// See [PermissionType] for what is supported.
-  Set<PermissionType> grant;
+  late Set<PermissionType> grant;
 
   /// The permitted actions on this resource.
   ///
   /// See [PermissionType] for what is supported.
-  Set<PermissionType> revoke;
+  late Set<PermissionType> revoke;
 
   /// Returns a [PolicyResource] with the [path]
   /// and enriches it with the given information in [json].
@@ -68,21 +72,14 @@ class PolicyResource implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newJson = Map();
-    if (grant.isNotEmpty)
       newJson[JsonKey.grant] = _createPermissionString(grant);
-    if (revoke.isNotEmpty)
       newJson[JsonKey.revoke] = _createPermissionString(revoke);
     return newJson;
   }
 
   @override
   String toString() {
-    return "PolicyResource($_path [grant: $grant] [revoke: $revoke])";
-  }
-
-  /// Returns the value stored in [_path].
-  String getPath() {
-    return _path;
+    return "PolicyResource($path [grant: $grant] [revoke: $revoke])";
   }
 
   static Set<PermissionType> _createPermissionSet(List<dynamic> jsonList) {
