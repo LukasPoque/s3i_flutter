@@ -17,10 +17,10 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 class OAuthProxyFlow extends AuthenticationManager {
   OAuthProxyFlow(ClientIdentity clientIdentity,
       {required this.openUrlCallback,
-        this.onAuthSuccess,
-        this.maxRetryPickup = 100,
-        this.retryWaitingTimeMilliSec = 200,
-        List<String> scopes = const []})
+      this.onAuthSuccess,
+      this.maxRetryPickup = 100,
+      this.retryWaitingTimeMilliSec = 200,
+      List<String> scopes = const []})
       : super(clientIdentity, scopes: scopes);
 
   AccessToken? _accessToken;
@@ -107,8 +107,7 @@ class OAuthProxyFlow extends AuthenticationManager {
         await openUrlCallback(Uri.parse(authenticatorUrl));
         //start polling at pickup endpoint
         final pollingUrl = authProxyBase +
-            "/pickup/${initBody["proxy_user_identifier"]
-                .toString()}/${initBody["proxy_secret"].toString()}";
+            "/pickup/${initBody["proxy_user_identifier"].toString()}/${initBody["proxy_secret"].toString()}";
         final pickUpClient = http.Client();
         for (int i = 0; i < maxRetryPickup; i++) {
           response = await pickUpClient.get(Uri.parse(pollingUrl));
