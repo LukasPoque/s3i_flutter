@@ -39,7 +39,7 @@ For further information see the [KWH Glossar](https://www.kwh40.de/glossar/) and
 Add it to your `pubspec.yaml` file:
 ```yaml
 dependencies:
-  s3i_flutter: ^0.1.0
+  s3i_flutter: ^0.2.1
 ```
 Install packages from the command line
 ```
