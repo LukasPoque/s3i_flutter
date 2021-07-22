@@ -77,4 +77,18 @@ class S3ICore {
       throw NetworkResponseException(response);
     }
   }
+
+  Future<PolicyEntry> getPolicy(String policyId) async {
+    var response = await getDirectory("/policies/" + policyId);
+    if (response.statusCode != 200) throw NetworkResponseException(response);
+    return PolicyEntry.fromJson(jsonDecode(response.body));
+  }
+
+  Future<void> putPolicy(PolicyEntry policy) async {
+    var response =
+        await putDirectory("/policies/" + policy.id, jsonBody: policy.toJson());
+    if (response.statusCode != 204 && response.statusCode != 201) {
+      throw NetworkResponseException(response);
+    }
+  }
 }
