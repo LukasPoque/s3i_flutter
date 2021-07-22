@@ -27,6 +27,13 @@
 </p>
 
 
+## About S³I and KWH4.0
+
+If you are not familiar with the S³I concepts, please read the 
+[KWH4.0-Standpunkt](https://www.kwh40.de/wp-content/uploads/2020/04/KWH40-Standpunkt-S3I-v2.0.pdf).
+
+For further information see the [KWH Glossar](https://www.kwh40.de/glossar/) and the other [Standpunkte](https://www.kwh40.de/veroffentlichungen/).
+
 ## Installing
 
 Add it to your `pubspec.yaml` file:
@@ -42,20 +49,13 @@ flutter packages get
 If you like this package, consider supporting it by giving a star on [GitHub](https://github.com/LukasPoque/s3i_flutter) and 
 a like on [pub.dev](https://pub.dev/packages/s3i_flutter) :heart:
 
-## About S³I and KWH4.0
-
-If you are not familiar with the S³I concepts, please consider reading the 
-[KWH4.0-Standpunkt](https://www.kwh40.de/wp-content/uploads/2020/04/KWH40-Standpunkt-S3I-v2.0.pdf).
-
-For further information see the [KWH Glossar](https://www.kwh40.de/glossar/) and the other [Standpunkte](https://www.kwh40.de/veroffentlichungen/).
-
 ## Usage
 
 For a basic example application see the [example](https://github.com/LukasPoque/s3i_flutter/tree/master/example).
 
-### Setup Auth
+### Setup authentication
 
-Create a `ClientIdentity` used by your app. Please contact the [KWH4.0](https://www.kwh40.de/kontakt/) to get an app specific client.
+First you need to create a `ClientIdentity` used by your app. Please contact the [KWH4.0](https://www.kwh40.de/kontakt/) to get an app specific client.
 ```dart
 final clientIdentity = ClientIdentity(<CLIENT-ID>, <CLIENT-SECRET>);
 ```
@@ -70,7 +70,7 @@ final authManager = OAuthProxyFlow(clientIdentity,
       scopes: ["group", "offline_access"]);
 ```
 
-Last but not least you should use this `AuthenticationManager`-Instance to create a `S3ICore`-Instance. Now you could work with the `S3I`.
+Last but not least you should use this `AuthenticationManager`-Instance to create a `S3ICore`-Instance.
 ```dart
 final s3i = S3ICore(authManager);
 ```
@@ -85,9 +85,11 @@ try {
 }
 ````
 
-### Send Requests to the directory
+If the `S3ICore`-Instance is ready to use you can now receive and update information from the S3I-Services. 
 
-If the `S3ICore`-Instance is ready to use you can receive information about a specific thing by calling `getThing()`. 
+### Get data from the directory
+
+To get data about a specific thing you can simply call `getThing()` on your `S3ICore`-Instance. 
 If you don't need the whole thing it's recommended to use a `FieldQuery` so you only receive a part of the entry 
 which is faster and safes network data.
 ```dart
@@ -98,6 +100,36 @@ try {
 }
 ```
 
+Similar to this you can request a specific policy from the directory:
+```dart
+try {
+  var policy = await s3i.getPolicy(<POLICY_ID>));
+} on S3IException catch (e) {
+  debugPrint("Request Policy failed: " + e.toString());
+}
+```
+
+TODO: add search example
+
+### Update data in the directory
+
+To update data in the directory it's recommended to request the target before changing it. 
+This is not needed, because all data classes cloud be created without a version from the cloud but since this package doesn't support `PATCH` requests
+using only local data could lead to unintentionally overwriting much more likely.
+
+To update an entry in the directory simply use the `putThing()` or `putPolicy()` method with the locally modified object:
+```dart
+policyEntry.insertObserver(PolicySubject("nginx:test_observer"));
+try {
+  await s3i.putPolicy(policyEntry);
+} on S3IException catch (e) {
+  debugPrint("Update Policy failed: " + e.toString());
+}
+```
+
+### Send and receive messages via S3I-Broker
+
+TODO: ...
 
 ## Project Structure
 
@@ -115,6 +147,16 @@ This implementation of the `AuthenticationManager` uses the S3I-OAuthProxy to ob
 But it doesn't refreshes the tokens automatically, only only if `getAccessToken` is called and the `accessToken` is expired.
 
 ### policy
+
+The `policy` folder includes data classes to store and manipulate the policy entries of a thing from the directory OR repository.
+
+A `PolicyEntry` consists of `PolicyGroup`s and manages the access control to one specific `Entry`.
+Each one has it's own policy entry which is only valid for the the service where it's stored (directory/repository).
+For more background information see: https://www.eclipse.org/ditto/basic-policy.html
+
+In the S3I-Concept there are two special `PolicyGroup`s which have a specific meaning:
+- owner: An owner has READ and WRITE permission to everything (thing:/, policy:/, message:/)
+- observer: An observer has only READ permission to the thing part (thing:/)
 
 ### broker
 

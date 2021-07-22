@@ -51,10 +51,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final thingIdInputController = TextEditingController();
+  final policyIdInputController = TextEditingController();
 
   // s3i values
   AccessToken? accessToken;
   Thing? requestedThing;
+  PolicyEntry? requestedPolicy;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +72,9 @@ class _MyHomePageState extends State<MyHomePage> {
               Divider(height: 5, thickness: 5),
               _buildThingRequestArea(),
               Divider(height: 5, thickness: 5),
-              _buildEditThingArea()
+              _buildEditThingArea(),
+              Divider(height: 5, thickness: 5),
+              _buildPolicyRequestArea()
             ],
           ),
         ));
@@ -135,9 +139,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     } on S3IException catch (e) {
                       debugPrint("Request Thing failed");
                       debugPrint(e.toString());
+                      setState(() {
+                        requestedThing = null;
+                      });
                     }
                   },
-                  child: Text("Request"))
+                  child: Text("Request Thing"))
             ],
           ),
           SizedBox(height: 8),
@@ -170,6 +177,47 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           )
         : Container();
+  }
+
+  Widget _buildPolicyRequestArea() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: policyIdInputController,
+                ),
+              ),
+              SizedBox(width: 8),
+              OutlinedButton(
+                  onPressed: () async {
+                    try {
+                      // requests the given policy
+                      // you need read access to the policy
+                      var policy = await MyHomePage.s3i
+                          .getPolicy(policyIdInputController.text);
+                      setState(() {
+                        requestedPolicy = policy;
+                      });
+                    } on S3IException catch (e) {
+                      debugPrint("Request Policy failed");
+                      debugPrint(e.toString());
+                      setState(() {
+                        requestedPolicy = null;
+                      });
+                    }
+                  },
+                  child: Text("Request Policy"))
+            ],
+          ),
+          SizedBox(height: 8),
+          if (requestedPolicy != null) Text(requestedPolicy.toString())
+        ],
+      ),
+    );
   }
 
   @override

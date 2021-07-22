@@ -6,6 +6,13 @@ class JsonKey {
   static const String attributes = "attributes";
   static const String items = "items";
   static const String cursor = "cursor";
+  static const String type = "type";
+  static const String expiry = "expiry";
+  static const String grant = "grant";
+  static const String revoke = "revoke";
+  static const String subjects = "subjects";
+  static const String resources = "resources";
+  static const String entries = "entries";
 
 // keycloak
   static const String grantType = "grant_type";
