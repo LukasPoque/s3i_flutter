@@ -18,6 +18,12 @@ export 'src/exceptions/parse_exception.dart';
 export 'src/exceptions/max_retry_exception.dart';
 export 'src/exceptions/network_response_exception.dart';
 
+//policy
+export 'src/policy/policy_entry.dart';
+export 'src/policy/policy_group.dart';
+export 'src/policy/policy_resource.dart';
+export 'src/policy/policy_subject.dart';
+
 //query
 export 'src/query/query_assembler.dart';
 export 'src/query/field_query.dart';
