@@ -72,8 +72,8 @@ class PolicyResource implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newJson = Map();
-      newJson[JsonKey.grant] = _createPermissionString(grant);
-      newJson[JsonKey.revoke] = _createPermissionString(revoke);
+    newJson[JsonKey.grant] = _createPermissionString(grant);
+    newJson[JsonKey.revoke] = _createPermissionString(revoke);
     return newJson;
   }
 
