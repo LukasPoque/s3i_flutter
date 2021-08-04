@@ -24,7 +24,7 @@ analyzer:
 linter:
   rules:
     - always_declare_return_types
-    - always_put_control_body_on_new_line
+    # - always_put_control_body_on_new_line
     # - always_put_required_named_parameters_first # prefer having parameters in the same order as fields
     - always_require_non_null_named_parameters
     - always_specify_types
