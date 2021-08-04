@@ -29,6 +29,8 @@
 
 ## About S³I and KWH4.0
 
+The S³I is a centralised infrastructure with currentyl five main services for the decentralized IoT of WH4.0 Things (Forestry4.0 Things) developed by the [KWH4.0](https://www.kwh40.de/).
+
 If you are not familiar with the S³I concepts, please read the 
 [KWH4.0-Standpunkt](https://www.kwh40.de/wp-content/uploads/2020/04/KWH40-Standpunkt-S3I-v2.0.pdf).
 
@@ -114,8 +116,8 @@ TODO: add search example
 ### Update data in the directory
 
 To update data in the directory it's recommended to request the target before changing it. 
-This is not needed, because all data classes cloud be created without a version from the cloud but since this package doesn't support `PATCH` requests
-using only local data could lead to unintentionally overwriting much more likely.
+This is not needed, because all data classes cloud be created without a version from the cloud but since this package doesn't support `PATCH` requests,
+using only local data could lead  much more likely to unintentionally overwriting of values.
 
 To update an entry in the directory simply use the `putThing()` or `putPolicy()` method with the locally modified object:
 ```dart
@@ -142,6 +144,7 @@ TODO: s3i core / entry
 The `auth` folder includes classes which are used to authenticate a user/client in the S3I.
 
 The `S3ICore` needs a valid instance of a `AuthenticationManager` to work.
+
 Currently there is only one implementation available: `OAuthProxyFlow`.
 This implementation of the `AuthenticationManager` uses the S3I-OAuthProxy to obtain an access and refresh token.
 But it doesn't refreshes the tokens automatically, only only if `getAccessToken` is called and the `accessToken` is expired.
