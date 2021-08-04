@@ -47,17 +47,17 @@ linter:
     - avoid_js_rounded_ints
     - avoid_null_checks_in_equality_operators
     - avoid_positional_boolean_parameters
-    # - avoid_print
+    - avoid_print
     # - avoid_private_typedef_functions # we prefer having typedef (discussion in https://github.com/flutter/flutter/pull/16356)
-    # - avoid_redundant_argument_values # not yet tested
+    # - avoid_redundant_argument_values # we could do declare arguments with values that match the defaults to highlight this value
     - avoid_relative_lib_imports
     - avoid_renaming_method_parameters
     - avoid_return_types_on_setters
     # - avoid_returning_null # there are plenty of valid reasons to return null
-    # - avoid_returning_null_for_future # not yet tested
+    - avoid_returning_null_for_future
     - avoid_returning_null_for_void
     # - avoid_returning_this # there are plenty of valid reasons to return this
-    # - avoid_setters_without_getters # not yet tested
+    - avoid_setters_without_getters
     - avoid_shadowing_type_parameters
     - avoid_single_cascade_in_expression_statements
     - avoid_slow_async_io
@@ -67,12 +67,12 @@ linter:
     - avoid_unnecessary_containers
     - avoid_unused_constructor_parameters
     - avoid_void_async
-    # - avoid_web_libraries_in_flutter # not yet tested
+    # - avoid_web_libraries_in_flutter # unsure what to do
     - await_only_futures
     - camel_case_extensions
     - camel_case_types
     - cancel_subscriptions
-    # - cascade_invocations # not yet tested
+    - cascade_invocations
     - cast_nullable_to_non_nullable
     # - close_sinks # not reliable enough
     # - comment_references # blocked on https://github.com/dart-lang/linter/issues/1142
@@ -80,7 +80,7 @@ linter:
     - control_flow_in_finally
     # - curly_braces_in_flow_control_structures # not required by flutter style
     - deprecated_consistency
-    # - diagnostic_describe_all_properties # not yet tested
+    # - diagnostic_describe_all_properties
     - directives_ordering
     # - do_not_use_environment # we do this commonly
     - empty_catches
@@ -160,7 +160,7 @@ linter:
     - recursive_getters
     - sized_box_for_whitespace
     - slash_for_doc_comments
-    # - sort_child_properties_last # not yet tested
+    - sort_child_properties_last
     - sort_constructors_first
     - sort_pub_dependencies
     - sort_unnamed_constructors_first
@@ -183,23 +183,23 @@ linter:
     - unnecessary_nullable_for_final_variable_declarations
     - unnecessary_overrides
     - unnecessary_parenthesis
-    # - unnecessary_raw_strings # not yet tested
+    - unnecessary_raw_strings
     - unnecessary_statements
     - unnecessary_string_escapes
     - unnecessary_string_interpolations
     - unnecessary_this
     - unrelated_type_equality_checks
-    # - unsafe_html # not yet tested
+    - unsafe_html
     - use_full_hex_values_for_flutter_colors
     - use_function_type_syntax_for_parameters
-    # - use_if_null_to_convert_nulls_to_bools # not yet tested
+    - use_if_null_to_convert_nulls_to_bools
     - use_is_even_rather_than_modulo
     - use_key_in_widget_constructors
     - use_late_for_private_fields_and_variables
     - use_named_constants
     - use_raw_strings
     - use_rethrow_when_possible
-    # - use_setters_to_change_properties # not yet tested
+    - use_setters_to_change_properties
     # - use_string_buffers # has false positives: https://github.com/dart-lang/sdk/issues/34182
     # - use_to_and_as_if_applicable # has false positives, so we prefer to catch this by code-review
     - valid_regexps
