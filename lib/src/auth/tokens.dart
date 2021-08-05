@@ -37,7 +37,7 @@ abstract class JsonWebToken {
   ///
   /// The [originalToken]-String should contain header, payload and
   /// the signature base64 encoded. Decodes the given input into the
-  /// [decodedPayload] with the [JwtDecoder].
+  /// [decodedPayload].
   ///
   /// Throws [FormatException] if there are not 3 parts (header, payload,
   ///  signature) or the payload could not be decoded. Could be thrown if there
@@ -81,7 +81,8 @@ abstract class JsonWebToken {
         timeBufferInSeconds;
   }
 
-  /// Returns the exact moment when the token expires.
+  /// Returns the exact moment when the token expires or the start of the epoch
+  /// if the expiration date could not be found.
   DateTime getExpirationDate();
 
   @override
@@ -135,8 +136,13 @@ class AccessToken extends JsonWebToken {
 
   @override
   DateTime getExpirationDate() {
-    final int secSinceEpoch = decodedPayload[_payloadKeyExpire] as int;
-    return DateTime.fromMillisecondsSinceEpoch(secSinceEpoch * 1000);
+    try {
+      final int secSinceEpoch = decodedPayload[_payloadKeyExpire] as int;
+      return DateTime.fromMillisecondsSinceEpoch(secSinceEpoch * 1000);
+    } on TypeError {
+      // this method shouldn't throw an exception return epoch start  as default
+      return DateTime.fromMillisecondsSinceEpoch(0);
+    }
   }
 }
 
@@ -181,13 +187,25 @@ class RefreshToken extends JsonWebToken {
   DateTime getExpirationDate() {
     if (decodedPayload[_payloadKeyType] != _payloadValueRefresh) {
       //refresh token
-      final int secSinceEpoch = decodedPayload[_payloadKeyExpire] as int;
-      return DateTime.fromMillisecondsSinceEpoch(secSinceEpoch * 1000);
+      try {
+        final int secSinceEpoch = decodedPayload[_payloadKeyExpire] as int;
+        return DateTime.fromMillisecondsSinceEpoch(secSinceEpoch * 1000);
+      } on TypeError {
+        // this method shouldn't throw an exception
+        // return epoch start as default
+        return DateTime.fromMillisecondsSinceEpoch(0);
+      }
     } else {
       //offline token
-      final int secSinceEpoch = decodedPayload[_payloadKeyIssued] as int;
-      return DateTime.fromMillisecondsSinceEpoch(secSinceEpoch * 1000)
-          .add(_offlineExpiringTime);
+      try {
+        final int secSinceEpoch = decodedPayload[_payloadKeyIssued] as int;
+        return DateTime.fromMillisecondsSinceEpoch(secSinceEpoch * 1000)
+            .add(_offlineExpiringTime);
+      } on TypeError {
+        // this method shouldn't throw an exception
+        // return epoch start as default
+        return DateTime.fromMillisecondsSinceEpoch(0);
+      }
     }
   }
 }
