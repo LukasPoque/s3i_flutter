@@ -1,11 +1,12 @@
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-abstract class Token {
+///
+abstract class JsonWebToken {
   final String originalToken;
   late Map<String, dynamic> decodedToken;
 
   /// Throws [FormatException] if [originalToken] is no valid JWT
-  Token(this.originalToken) {
+  JsonWebToken(this.originalToken) {
     decodedToken = JwtDecoder.decode(originalToken);
   }
 
@@ -25,7 +26,7 @@ abstract class Token {
 }
 
 //TODO: validate token type
-class AccessToken extends Token {
+class AccessToken extends JsonWebToken {
   AccessToken(String originalToken) : super(originalToken);
 
   @override
@@ -34,7 +35,7 @@ class AccessToken extends Token {
   }
 }
 
-class RefreshToken extends Token {
+class RefreshToken extends JsonWebToken {
   RefreshToken(String originalToken) : super(originalToken);
 
   @override
