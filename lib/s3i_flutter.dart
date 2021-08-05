@@ -13,6 +13,8 @@ export 'src/directory/link.dart';
 export 'src/directory/location.dart';
 export 'src/directory/thing.dart';
 export 'src/directory/value.dart';
+
+//exception
 export 'src/exceptions/invalid_json_schema_exception.dart';
 export 'src/exceptions/json_missing_key_exception.dart';
 export 'src/exceptions/max_retry_exception.dart';
