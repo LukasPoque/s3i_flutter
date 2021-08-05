@@ -10,7 +10,32 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 /// > defining the subject “issuer” (so which party issued the authentication)
 /// > and an actual subject, separated with a colon.
 class PolicySubject implements JsonSerializableObject {
+  /// Creates a [PolicySubject] with the [id] and the optional
+  /// [expiringTimestamp] and [type].
   PolicySubject(this.id, {this.expiringTimestamp, this.type});
+
+  /// Returns a [PolicySubject] with the [id]
+  /// and enriches it with the given information in [json].
+  ///
+  /// Throws an [InvalidJsonSchemaException] if [json] contains an "expiry" key
+  /// which could not be parsed by [DateTime.parse()] OR if [json] contains
+  /// an "type" key which isn't a [String].
+  factory PolicySubject.fromJson(String id, Map<String, dynamic> json) {
+    final PolicySubject pS = PolicySubject(id);
+    try {
+      if (json.containsKey(JsonKey.expiry)) {
+        pS.expiringTimestamp = DateTime.parse(json[JsonKey.expiry] as String);
+      }
+      pS.type = json[JsonKey.type] as String;
+    } on FormatException catch (e) {
+      //datetime parsing failed
+      throw InvalidJsonSchemaException(e.message, json.toString());
+    } on TypeError catch (e) {
+      throw InvalidJsonSchemaException(
+          e.stackTrace.toString(), json.toString());
+    }
+    return pS;
+  }
 
   ///  The subject-id (WHO gets the permissions granted/revoked).
   ///
@@ -31,29 +56,6 @@ class PolicySubject implements JsonSerializableObject {
   /// An optional description of the subject.
   String? type;
 
-  /// Returns a [PolicySubject] with the [id]
-  /// and enriches it with the given information in [json].
-  ///
-  /// Throws an [InvalidJsonSchemaException] if [json] contains an "expiry" key
-  /// which could not be parsed by [DateTime.parse()] OR if [json] contains
-  /// an "type" key which isn't a [String].
-  factory PolicySubject.fromJson(String id, Map<String, dynamic> json) {
-    PolicySubject pS = PolicySubject(id);
-    try {
-      if (json.containsKey(JsonKey.expiry)) {
-        pS.expiringTimestamp = DateTime.parse(json[JsonKey.expiry]);
-      }
-      pS.type = json[JsonKey.type];
-    } on FormatException catch (e) {
-      //datetime parsing failed
-      throw InvalidJsonSchemaException(e.message, json.toString());
-    } on TypeError catch (e) {
-      throw InvalidJsonSchemaException(
-          e.stackTrace.toString(), json.toString());
-    }
-    return pS;
-  }
-
   /// Returns the stored information about this [PolicySubject] in a [Map]
   /// which could be directly used to creates a json entry.
   ///
@@ -61,7 +63,7 @@ class PolicySubject implements JsonSerializableObject {
   /// The [Map] is empty if both fields are [null].
   @override
   Map<String, dynamic> toJson() {
-    Map<String, dynamic> newJson = Map();
+    final Map<String, dynamic> newJson = <String, dynamic>{};
     if (expiringTimestamp != null)
       newJson[JsonKey.expiry] = expiringTimestamp!.toIso8601String();
     if (type != null) newJson[JsonKey.type] = type;
@@ -70,6 +72,6 @@ class PolicySubject implements JsonSerializableObject {
 
   @override
   String toString() {
-    return "PolicySubject($id:[$expiringTimestamp | $type])";
+    return 'PolicySubject($id:[$expiringTimestamp | $type])';
   }
 }

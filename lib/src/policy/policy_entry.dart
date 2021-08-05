@@ -1,5 +1,4 @@
 import 'package:s3i_flutter/src/entry.dart';
-import 'package:s3i_flutter/src/exceptions/invalid_argument_exception.dart';
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/policy/policy_group.dart';
@@ -13,46 +12,39 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 /// specific [Entry] in the S3I-Directory or S3i-Repository.
 /// For more background information see: https://www.eclipse.org/ditto/basic-policy.html
 ///
-/// In the S3I-Concept there are two special [PolicyGroup]s which have a specific
-/// meaning:
+/// In the S3I-Concept there are two special [PolicyGroup]s which have a
+/// specific meaning:
 /// - owner: An owner has READ and WRITE permission to everything
 /// (thing:/, policy:/, message:/)
 /// - observer: An observer has only READ permission to the thing part (thing:/)
 class PolicyEntry extends Entry {
+  /// Creates a [PolicyEntry] with the given [id] and [entryGroups].
   PolicyEntry(String id, {Map<String, PolicyGroup>? entryGroups}) : super(id) {
-    _groups = {...?entryGroups};
+    _groups = <String, PolicyGroup>{...?entryGroups};
   }
-
-  /// The key of the special `owner` group.
-  static final String ownerGroupKey = "owner";
-
-  /// The key of the special `observer` group.
-  static final String observerGroupKey = "observer";
-
-  /// The policy groups of this [PolicyEntry].
-  ///
-  /// The key is the name of the group.
-  late Map<String, PolicyGroup> _groups;
 
   /// Returns a [PolicyEntry] with groups (subjects and resources) specified
   /// in the [map].
   ///
-  /// Throws a [InvalidArgumentException] if the map is empty.
+  /// Throws a [ArgumentError] if the map is empty.
   /// Throws a [JsonMissingKeyException] if there is no `policyId` key in
   /// the [map].
   /// Throws a [InvalidJsonSchemaException] if the `entry` key doesn't contain
   /// valid [PolicyGroup]s.
+  /// Throws a [TypeError] if some values doesn't match the expected value type.
   factory PolicyEntry.fromJson(Map<String, dynamic> map) {
-    if (map.isEmpty) throw InvalidArgumentException('empty map');
-    String pId = map.containsKey(JsonKey.policyId)
-        ? map[JsonKey.policyId]
+    if (map.isEmpty) throw ArgumentError('empty map');
+    final String pId = map.containsKey(JsonKey.policyId)
+        ? map[JsonKey.policyId] as String
         : throw JsonMissingKeyException(JsonKey.policyId, map.toString());
-    PolicyEntry pE = PolicyEntry(pId);
+    final PolicyEntry pE = PolicyEntry(pId);
     try {
       if (map.containsKey(JsonKey.entries)) {
-        Map<String, dynamic> gro = map[JsonKey.entries];
-        for (var k in gro.keys) {
-          pE._groups[k] = PolicyGroup.fromJson(k, gro[k]);
+        final Map<String, dynamic> gro =
+            map[JsonKey.entries] as Map<String, dynamic>;
+        for (final String k in gro.keys) {
+          pE._groups[k] =
+              PolicyGroup.fromJson(k, gro[k] as Map<String, dynamic>);
         }
       }
     } on TypeError catch (e) {
@@ -61,17 +53,29 @@ class PolicyEntry extends Entry {
     return pE;
   }
 
+  /// The key of the special `owner` group.
+  static const String ownerGroupKey = 'owner';
+
+  /// The key of the special `observer` group.
+  static const String observerGroupKey = 'observer';
+
+  /// The policy groups of this [PolicyEntry].
+  ///
+  /// The key is the name of the group.
+  late Map<String, PolicyGroup> _groups;
+
   /// Returns the stored information about this [PolicyEntry] in a [Map]
   /// which could be directly used to creates a json entry.
   ///
   /// Stores [id] and [_groups] in the [Map].
   @override
   Map<String, dynamic> toJson() {
-    Map<String, dynamic> newJson = Map();
+    final Map<String, dynamic> newJson = <String, dynamic>{};
     newJson[JsonKey.policyId] = id;
     if (_groups.isNotEmpty) {
-      Map<String, dynamic> gro = _groups
-          .map((key, value) => MapEntry<String, dynamic>(key, value.toJson()));
+      final Map<String, dynamic> gro = _groups.map<String, dynamic>(
+          (String key, PolicyGroup value) =>
+              MapEntry<String, dynamic>(key, value.toJson()));
       newJson[JsonKey.entries] = gro;
     }
     return newJson;
@@ -79,7 +83,7 @@ class PolicyEntry extends Entry {
 
   @override
   String toString() {
-    return "PolicyEntry($id: $_groups)";
+    return 'PolicyEntry($id: $_groups)';
   }
 
   /// Returns the value of [_groups].
@@ -89,10 +93,10 @@ class PolicyEntry extends Entry {
 
   /// Returns the [PolicyGroup] in [_groups] matching [name].
   ///
-  /// Throws [InvalidArgumentException] if there is no group with this name.
+  /// Throws [ArgumentError] if there is no group with this name.
   PolicyGroup getGroup(String name) {
     if (_groups.containsKey(name)) return _groups[name]!;
-    throw InvalidArgumentException("No group [$name] found");
+    throw ArgumentError('No group [$name] found');
   }
 
   /// Adds the given [group] to the [_groups] of this entry.
@@ -113,9 +117,9 @@ class PolicyEntry extends Entry {
 
   /// Returns a map of [PolicySubject]s who are in the special group `owner`.
   ///
-  /// Throws [InvalidArgumentException] if there is no `owner` group.
+  /// Throws [ArgumentError] if there is no `owner` group.
   Map<String, PolicySubject> getAllOwners() {
-    var owner = getGroup(ownerGroupKey);
+    final PolicyGroup owner = getGroup(ownerGroupKey);
     return owner.subjects;
   }
 
@@ -126,17 +130,22 @@ class PolicyEntry extends Entry {
   /// will create one.
   void insertOwner(PolicySubject owner) {
     if (!_groups.containsKey(ownerGroupKey)) {
-      Map<String, PolicyResource> resource = {
-        "thing:/": PolicyResource("thing:/",
-            grants: {PermissionType.read, PermissionType.write}),
-        "policy:/": PolicyResource("policy:/",
-            grants: {PermissionType.read, PermissionType.write}),
-        "message:/": PolicyResource("message:/",
-            grants: {PermissionType.read, PermissionType.write})
+      final Map<String, PolicyResource> resource = <String, PolicyResource>{
+        'thing:/': PolicyResource('thing:/', grants: <PermissionType>{
+          PermissionType.read,
+          PermissionType.write
+        }),
+        'policy:/': PolicyResource('policy:/', grants: <PermissionType>{
+          PermissionType.read,
+          PermissionType.write
+        }),
+        'message:/': PolicyResource('message:/',
+            grants: <PermissionType>{PermissionType.read, PermissionType.write})
       };
-      //TODO: add s3i admin entry?
+      // TODO(poq): add s3i admin entry?
       insertGroup(PolicyGroup(ownerGroupKey,
-          policySubjects: {owner.id: owner}, policyResources: resource));
+          policySubjects: <String, PolicySubject>{owner.id: owner},
+          policyResources: resource));
     } else {
       _groups[ownerGroupKey]!.subjects[owner.id] = owner;
     }
@@ -148,15 +157,15 @@ class PolicyEntry extends Entry {
   /// Returns `null` if [name] was no `owner` or there is no `owner` group.
   PolicySubject? removeOwner(String name) {
     if (!_groups.containsKey(ownerGroupKey)) return null;
-    var owner = _groups[ownerGroupKey];
-    return owner!.subjects.remove(name);
+    final PolicyGroup owner = _groups[ownerGroupKey]!;
+    return owner.subjects.remove(name);
   }
 
   /// Returns a map of [PolicySubject]s who are in the special group `observer`.
   ///
-  /// Throws [InvalidArgumentException] if there is no `observer` group.
+  /// Throws [ArgumentError] if there is no `observer` group.
   Map<String, PolicySubject> getAllObservers() {
-    var observer = getGroup(observerGroupKey);
+    final PolicyGroup observer = getGroup(observerGroupKey);
     return observer.subjects;
   }
 
@@ -167,11 +176,13 @@ class PolicyEntry extends Entry {
   /// will create one.
   void insertObserver(PolicySubject observer) {
     if (!_groups.containsKey(observerGroupKey)) {
-      Map<String, PolicyResource> resource = {
-        "thing:/": PolicyResource("thing:/", grants: {PermissionType.read})
+      final Map<String, PolicyResource> resource = <String, PolicyResource>{
+        'thing:/': PolicyResource('thing:/',
+            grants: <PermissionType>{PermissionType.read})
       };
       insertGroup(PolicyGroup(observerGroupKey,
-          policySubjects: {observer.id: observer}, policyResources: resource));
+          policySubjects: <String, PolicySubject>{observer.id: observer},
+          policyResources: resource));
     } else {
       _groups[observerGroupKey]!.subjects[observer.id] = observer;
     }
@@ -181,11 +192,11 @@ class PolicyEntry extends Entry {
   /// the `observer` group.
   ///
   /// Returns the [PolicySubject] associated with [name] before it was removed.
-  /// Returns `null` if [name] was no `observer` or
-  /// there is no `observer` group.
+  /// Returns `null` if [name] was no `observer` or  there is no
+  /// `observer` group.
   PolicySubject? removeObserver(String name) {
     if (!_groups.containsKey(observerGroupKey)) return null;
-    var observer = _groups[observerGroupKey];
-    return observer!.subjects.remove(name);
+    final PolicyGroup observer = _groups[observerGroupKey]!;
+    return observer.subjects.remove(name);
   }
 }
