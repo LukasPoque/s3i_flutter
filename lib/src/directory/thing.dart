@@ -1,110 +1,146 @@
+import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/directory/dir_object.dart';
 import 'package:s3i_flutter/src/directory/endpoint.dart';
 import 'package:s3i_flutter/src/directory/location.dart';
 import 'package:s3i_flutter/src/entry.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
-import 'package:s3i_flutter/src/exceptions/parse_exception.dart';
 import 'package:s3i_flutter/src/utils/json_key.dart';
 
-enum ThingType {
-  component,
-  service,
-  hmi,
-}
+// TODO(poq): add ditto specific attributes like definition,_revision,_modified
 
-/// Represents a Thing in the S3I-Directory Data Model.
+/// Represents a `Thing` in the S3I-Directory data model.
+///
+/// See the [KWH Standpunkt](https://www.kwh40.de/wp-content/uploads/2020/04/KWH40-Standpunkt-S3I-v2.0.pdf)
+/// for more information about a thing an its function.
+///
+/// Simple UML diagram for the S3I-Directory data model:
+/// ```
+/// +--------------+
+/// |              |
+/// |  S3I::Thing  |
+/// |              |
+/// +--------------+
+///         ^
+///         |
+///         |thingStructure
+///         |
+///         |0..1
+/// +-------+-------+0..1   target    +--------------+
+/// |               +---------------->|              |
+/// |  S3I::Object  |                 |  S3I::Link   |
+/// |               |<----------------+              |
+/// +---------------+  links        * +--------------+
+///         ^
+///         |
+///         |values
+///         |
+///         |*
+/// +-------+------+
+/// |              |
+/// |  S3I::Value  |
+/// |              |
+/// +--------------+
+/// ```
 class Thing extends Entry {
-  String? name;
-  ThingType? thingType;
-  String? dataModel;
-  String? publicKey;
-  List<Endpoint>? allEndpoints;
-  Endpoint? defaultEndpoint; //TODO: change to list
-  String? defaultHMI;
-  Location? location;
-  String? ownedBy;
-  String? administratedBy;
-  String? usedBy;
-  String? represents;
-  DirObject? thingStructure;
-
+  /// Creates a new [Thing] with the given [id].
   Thing(String id) : super(id);
 
-  /// Creates a thing from the given map (mostly created via jsonDecode(jsonStr)).
-  /// throws ParseException if the map is empty
-  /// throws JsonMissingKeyException if there is no thingId in the map | no class in object | no attribute in value | no association in link
-  /// throws TypeError if a matching key field mismatches the expected value type
+  /// Creates a [Thing] from a decoded [json] entry.
+  ///
+  /// Could throw [InvalidJsonSchemaException], [JsonMissingKeyException] and
+  /// [TypeError] if something went wrong during the parsing to the
+  /// directory objects.
   factory Thing.fromJson(Map<String, dynamic> map) {
-    if (map.isEmpty) throw ParseException('empty map');
-    String tId = map.containsKey(JsonKey.thingId)
-        ? map[JsonKey.thingId]
+    final String tId = map.containsKey(JsonKey.thingId)
+        ? map[JsonKey.thingId] as String
         : throw JsonMissingKeyException(JsonKey.thingId, map.toString());
-    //TODO: check if matching key field mismatches the expected value type and create own error (extended from S3IException)
-    Thing t = Thing(tId);
-    dynamic attributes = map[JsonKey.attributes];
-    if (attributes != null) {
-      Map<String, dynamic> attributesMap = attributes;
-      t.name = attributesMap[JsonKey.name];
-      t.thingType = attributesMap.containsKey(JsonKey.thingType)
-          ? _createThingType(attributesMap[JsonKey.thingType])
-          : null;
-      t.dataModel = attributesMap[JsonKey.dataModel];
-      t.publicKey = attributesMap[JsonKey.publicKey];
-      t.allEndpoints = attributesMap.containsKey(JsonKey.allEndpoints)
-          ? _createEndpointList(attributesMap[JsonKey.allEndpoints])
-          : null;
-      t.defaultEndpoint = attributesMap.containsKey(JsonKey.defaultEndpoint)
-          ? Endpoint(attributesMap[JsonKey.defaultEndpoint])
-          : null;
-      t.defaultHMI = attributesMap[JsonKey.defaultHMI];
-      t.location = attributesMap.containsKey(JsonKey.location)
-          ? Location.fromJson(attributesMap[JsonKey.location])
-          : null;
-      t.ownedBy = attributesMap[JsonKey.ownedBy];
-      t.administratedBy = attributesMap[JsonKey.administratedBy];
-      t.usedBy = attributesMap[JsonKey.usedBy];
-      t.represents = attributesMap[JsonKey.represents];
-      t.thingStructure = attributesMap.containsKey(JsonKey.thingStructure)
-          ? DirObject.fromJson(attributesMap[JsonKey.thingStructure])
-          : null;
+    final Thing internalThing = Thing(tId);
+    if (map.containsKey(JsonKey.attributes)) {
+      final Map<String, dynamic> attributesMap =
+          map[JsonKey.attributes] as Map<String, dynamic>;
+      internalThing.name = attributesMap[JsonKey.name] as String?;
+      try {
+        internalThing.thingType = attributesMap.containsKey(JsonKey.thingType)
+            ? _createThingType(attributesMap[JsonKey.thingType] as String)
+            : null;
+      } on FallThroughError {
+        throw InvalidJsonSchemaException('unknown thing type', map.toString());
+      }
+      internalThing
+        ..dataModel = attributesMap[JsonKey.dataModel] as String?
+        ..publicKey = attributesMap[JsonKey.publicKey] as String?
+        ..allEndpoints = attributesMap.containsKey(JsonKey.allEndpoints)
+            ? _createEndpointList(
+                attributesMap[JsonKey.allEndpoints] as List<dynamic>)
+            : null
+        ..defaultEndpoint = attributesMap.containsKey(JsonKey.defaultEndpoint)
+            ? Endpoint(attributesMap[JsonKey.defaultEndpoint] as String)
+            : null
+        ..defaultHMI = attributesMap[JsonKey.defaultHMI] as String?
+        ..location = attributesMap.containsKey(JsonKey.location)
+            ? Location.fromJson(
+                attributesMap[JsonKey.location] as Map<String, dynamic>)
+            : null
+        ..ownedBy = attributesMap[JsonKey.ownedBy] as String?
+        ..administratedBy = attributesMap[JsonKey.administratedBy] as String?
+        ..usedBy = attributesMap[JsonKey.usedBy] as String?
+        ..represents = attributesMap[JsonKey.represents] as String?
+        ..thingStructure = attributesMap.containsKey(JsonKey.thingStructure)
+            ? DirObject.fromJson(
+                attributesMap[JsonKey.thingStructure] as Map<String, dynamic>)
+            : null;
     }
-    return t;
+    return internalThing;
   }
 
-  static ThingType _createThingType(String jsonField) {
-    switch (jsonField) {
-      case "component":
-        return ThingType.component;
-      case "service":
-        return ThingType.service;
-      case "hmi":
-        return ThingType.hmi;
-      default:
-        throw TypeError();
-    }
-  }
+  /// The display name.
+  String? name;
 
-  static String _thingTypeToString(ThingType thingType) {
-    switch (thingType) {
-      case ThingType.component:
-        return "component";
-      case ThingType.service:
-        return "service";
-      case ThingType.hmi:
-        return "hmi";
-    }
-  }
+  /// The type, see [ThingType].
+  ThingType? thingType;
 
-  static List<Endpoint> _createEndpointList(List<dynamic> jsonList) {
-    return jsonList.map((endP) => Endpoint(endP)).toList();
-  }
+  /// The data model of this entry (fml40).
+  String? dataModel;
+
+  /// The public key for secure communication.
+  String? publicKey;
+
+  /// All endpoints of this thing (e.g. S3I-B, OPC UA, MQTT, etc - addresses).
+  List<Endpoint>? allEndpoints;
+
+  /// The currently active endpoint of the thing.
+  Endpoint? defaultEndpoint; // TODO(poq): change to list
+
+  /// The current active hmi (e.g. app, website, etc.).
+  String? defaultHMI;
+
+  /// The last know location of this thing.
+  Location? location;
+
+  /// The owner id of this thing (UUIDv4).
+  ///
+  /// Query for `represents == currentThing.ownedBy` to get information about
+  /// the owner.
+  String? ownedBy;
+
+  /// The administrator of this thing (UUIDv4).
+  String? administratedBy;
+
+  /// The current user of this thing (UUIDv4).
+  String? usedBy;
+
+  /// The user id who is represented by this thing (digital twin) [UUID.4].
+  String? represents;
+
+  /// The fml40 structure/information of this thing.
+  DirObject? thingStructure;
 
   @override
   Map<String, dynamic> toJson() {
-    Map<String, dynamic> newJson = Map();
+    final Map<String, dynamic> newJson = <String, dynamic>{};
     newJson[JsonKey.thingId] = id;
     newJson[JsonKey.policyId] = id;
-    Map<String, dynamic> attributesMap = Map();
+    final Map<String, dynamic> attributesMap = <String, dynamic>{};
     if (name != null) attributesMap[JsonKey.name] = name;
     if (thingType != null)
       attributesMap[JsonKey.thingType] = _thingTypeToString(thingType!);
@@ -112,7 +148,7 @@ class Thing extends Entry {
     if (publicKey != null) attributesMap[JsonKey.publicKey] = publicKey;
     if (allEndpoints != null)
       attributesMap[JsonKey.allEndpoints] =
-          allEndpoints!.map((e) => e.endpoint).toList();
+          allEndpoints!.map((Endpoint e) => e.endpoint).toList();
     if (defaultEndpoint != null)
       attributesMap[JsonKey.defaultEndpoint] = defaultEndpoint;
     if (defaultHMI != null) attributesMap[JsonKey.defaultHMI] = defaultHMI;
@@ -127,4 +163,46 @@ class Thing extends Entry {
     if (attributesMap.isNotEmpty) newJson[JsonKey.attributes] = attributesMap;
     return newJson;
   }
+
+  static ThingType _createThingType(String jsonField) {
+    switch (jsonField) {
+      case 'component':
+        return ThingType.component;
+      case 'service':
+        return ThingType.service;
+      case 'hmi':
+        return ThingType.hmi;
+      default:
+        throw FallThroughError();
+    }
+  }
+
+  static String _thingTypeToString(ThingType thingType) {
+    switch (thingType) {
+      case ThingType.component:
+        return 'component';
+      case ThingType.service:
+        return 'service';
+      case ThingType.hmi:
+        return 'hmi';
+    }
+  }
+
+  static List<Endpoint> _createEndpointList(List<dynamic> jsonList) {
+    return jsonList.map((dynamic endP) => Endpoint(endP as String)).toList();
+  }
+}
+
+/// The different types of a thing in the fml4.0 language.
+///
+/// [ThingType.component], [ThingType.service], [ThingType.hmi]
+enum ThingType {
+  /// Component.
+  component,
+
+  /// Service.
+  service,
+
+  /// HumanMachineInterface.
+  hmi,
 }
