@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:s3i_flutter/s3i_flutter.dart';
 
 void mainTokenTest() {
-  test('Load valid token', () {
+  test('Load valid access token', () {
     const String tokenS =
         'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPbzRfUTE0UGxjeVJfX'
         '1A5MXAtYXRaWURYa29GVV9ORk5qLWtLdDVHdXNJIn0.eyJleHAiOjE2MTU4MDg1NDQsIml'
@@ -46,7 +46,7 @@ void mainTokenTest() {
     expect(token.decodedPayload['sub'], '606d8b38-4c3f-46bd-9482-86748e108f32');
   });
 
-  test('Load invalid token', () {
+  test('Load invalid access token', () {
     const String tokenS =
         'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPbzRfUTE0UGxjeVJfX'
         '1A5MXAtYXRaWURYa'
@@ -94,8 +94,38 @@ void mainTokenTest() {
     expect(() => AccessToken(tokenS),
         throwsA(predicate((Object? e) => e is FormatException)));
   });
-}
 
+  test('Load valid refresh token', () {
+    const String tokenS =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImEzZjU2OGFhLTIyOWQtNDJlYi'
+        '1iZmIwLThkNzdjOGMzMWQzNSJ9.eyJleHAiOjE2MjgxMjM4NzQsImlhdCI6MTYyODEyMz'
+        'A3NCwianRpIjoiNmE2ODFmZDktMDQ3ZC00Y2YwLTk0ZWUtNTk4ZWZmNTkzNjg3IiwiaXN'
+        'zIjoiaHR0cHM6Ly9pZHAuczNpLnZzd2YuZGV2L2F1dGgvcmVhbG1zL0tXSCIsImF1ZCI6I'
+        'mh0dHBzOi8vaWRwLnMzaS52c3dmLmRldi9hdXRoL3JlYWxtcy9LV0giLCJzdWIiOiIyN2F'
+        'lYzU3MS0yNDIxLTQ3YjQtYjEwOS0yMDViZTBjZTc2N2EiLCJ0eXAiOiJSZWZyZXNoIiwi'
+        'YXpwIjoiczNpLWZsdXR0ZXItdGVzdCIsInNlc3Npb25fc3RhdGUiOiJlNmM0NTUyMS00NT'
+        'czLTRkN2EtYWUwYy1hMTUzMDUwNDU1MzciLCJzY29wZSI6InByb2ZpbGUgZW1haWwifQ.K'
+        'XkivQqLm0yTXB-272gExYkejMNARiwPH8WBvGyv0Lg';
+    final JsonWebToken token = RefreshToken(tokenS);
+    expect(token.decodedPayload['sub'], '27aec571-2421-47b4-b109-205be0ce767a');
+  });
+
+  test('Load valid offline token', () {
+    const String tokenS =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImEzZjU2OGFhLTIyOWQtNDJlY'
+        'i1iZmIwLThkNzdjOGMzMWQzNSJ9.eyJpYXQiOjE2MTgyMzQxMTksImp0aSI6IjkwNDIyYT'
+        'I1LWJjNjItNDQ1Zi04YjVmLTIyYWU3ODQ5NDJjMSIsImlzcyI6Imh0dHBzOi8vaWRwLnMz'
+        'aS52c3dmLmRldi9hdXRoL3JlYWxtcy9LV0giLCJhdWQiOiJodHRwczovL2lkcC5zM2kudn'
+        'N'
+        '3Zi5kZXYvYXV0aC9yZWFsbXMvS1dIIiwic3ViIjoiMjdhZWM1NzEtMjQyMS00N2I0LWIxM'
+        'DktMjA1YmUwY2U3NjdhIiwidHlwIjoiT2ZmbGluZSIsImF6cCI6InMzaS1mbHV0dGVyLWV'
+        '4YW1wbGUtY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6IjBmODRjYTdhLWYyM2UtNDRlNC1h'
+        'MDZlLTkyODkyYWFjZmRjNCIsInNjb3BlIjoib3BlbmlkIGdyb3VwIG9mZmxpbmVfYWNjZ'
+        'XNzIGVtYWlsIn0.DfXogzztZbik701EWg0d9VDUCdY2KA3EyCbuomnBQy4';
+    final JsonWebToken token = RefreshToken(tokenS);
+    expect(token.decodedPayload['sub'], '27aec571-2421-47b4-b109-205be0ce767a');
+  });
+}
 
 void main() {
   mainTokenTest();
