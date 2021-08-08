@@ -5,9 +5,11 @@ import 'package:s3i_flutter/src/query/rql_query.dart';
 
 // TODO(poq): maybe a List<QueryParam> is easier + more flexible
 
-/// Returns an url encoded String which includes the [base] and the given
+/// Returns a String which includes the [base] and the given
 /// [rqlFilter], [namespaceQuery], [fieldQuery] and [optionQuery] if they
 /// aren't null.
+///
+/// The String is ready to use in a request to the Directory/Repository
 String assembleQuery(String base,
     {RQLQuery? rqlFilter,
     NamespaceQuery? namespaceQuery,
@@ -36,5 +38,6 @@ String assembleQuery(String base,
       path += optionQuery.generateString();
     }
   }
-  return Uri.encodeFull(path);
+  //return Uri.encodeFull(path);
+  return path;
 }
