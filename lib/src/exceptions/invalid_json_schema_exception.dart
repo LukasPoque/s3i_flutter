@@ -2,7 +2,7 @@ import 'package:s3i_flutter/src/exceptions/parse_exception.dart';
 
 /// Exception thrown when a json document could not be parsed correctly.
 class InvalidJsonSchemaException extends ParseException {
-  /// Creates an [InvalidJsonSchemaException] with the given [fieldName] and
+  /// Creates an [InvalidJsonSchemaException] with the given [message] and
   /// the encoded [jsonDump].
   InvalidJsonSchemaException(String message, this.jsonDump) : super(message);
 
