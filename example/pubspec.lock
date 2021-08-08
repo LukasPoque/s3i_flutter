@@ -86,13 +86,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.3"
-  jwt_decoder:
-    dependency: transitive
-    description:
-      name: jwt_decoder
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.1"
   matcher:
     dependency: transitive
     description:
@@ -134,7 +127,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.2.0"
+    version: "0.2.1"
   sky_engine:
     dependency: transitive
     description: flutter

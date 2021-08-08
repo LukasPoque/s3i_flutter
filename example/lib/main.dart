@@ -3,9 +3,10 @@ import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 //TODO: replace with your own client data
-// the client used here has no permissions in the s3i unless your personal account grants some
-final clientIdentity = ClientIdentity(
-    "s3i-flutter-example-client", "a3d4752b-396d-4bc8-a337-e54fb2c1706d");
+// the client used here has no permissions in the s3i unless your personal
+// account grants some
+final clientIdentity = ClientIdentity("s3i-flutter-example-client",
+    secret: "a3d4752b-396d-4bc8-a337-e54fb2c1706d");
 
 void main() {
   runApp(MyApp());
@@ -107,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
           SelectableText(accessToken != null ? accessToken!.originalToken : ""),
           SizedBox(height: 8),
           SelectableText(
-              accessToken != null ? accessToken!.decodedToken.toString() : ""),
+              accessToken != null ? accessToken!.decodedPayload.toString() : ""),
         ],
       ),
     );

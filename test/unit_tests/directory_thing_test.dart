@@ -5,16 +5,19 @@ import 'package:s3i_flutter/s3i_flutter.dart';
 
 void mainThingTests() {
   test('Load minimal thing', () {
-    final String json = """{
+    const String json = '''
+    {
       "thingId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "policyId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064"
-    }""";
-    final thing = Thing.fromJson(jsonDecode(json));
-    expect(thing.id, "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064");
+    }''';
+    final Thing thing =
+        Thing.fromJson(jsonDecode(json) as Map<String, dynamic>);
+    expect(thing.id, 's3i:00641896-cb2d-4aeb-9680-91c1bdf76064');
   });
 
   test('Load invalid Json', () {
-    final String json = """{
+    const String json = '''
+    {
       "thingId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "policyId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "attributes": {
@@ -23,60 +26,66 @@ void mainThingTests() {
           "https://ditto.s3i.vswf.dev/api/2/things/s3i:00641896-cb2d-4aeb-9680-91c1bdf76064"
         ]
       }
-    }""";
-    expect(() => Thing.fromJson(jsonDecode(json)),
-        throwsA(predicate((e) => e is FormatException)));
+    }''';
+    expect(() => Thing.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        throwsA(predicate((Object? e) => e is FormatException)));
   });
 
   test('Load minimal + attributes thing', () {
-    final String json = """{
+    const String json = '''
+    {
       "thingId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "policyId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "attributes": {
       }
-    }""";
-    final thing = Thing.fromJson(jsonDecode(json));
-    expect(thing.id, "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064");
+    }''';
+    final Thing thing =
+        Thing.fromJson(jsonDecode(json) as Map<String, dynamic>);
+    expect(thing.id, 's3i:00641896-cb2d-4aeb-9680-91c1bdf76064');
   });
 
   test('Load mismatching thing_type thing', () {
-    final String json = """{
+    const String json = '''
+    {
       "thingId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "policyId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "attributes": {
         "type": "wrong_string"
       }
-    }""";
-    expect(() => Thing.fromJson(jsonDecode(json)),
-        throwsA(predicate((e) => e is TypeError)));
+    }''';
+    expect(() => Thing.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        throwsA(predicate((Object? e) => e is InvalidJsonSchemaException)));
   });
 
   test('Load thing_type wrong element thing', () {
-    final String json = """{
+    const String json = '''
+    {
       "thingId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "policyId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "attributes": {
         "type": ["a","b"]
       }
-    }""";
-    expect(() => Thing.fromJson(jsonDecode(json)),
-        throwsA(predicate((e) => e is TypeError)));
+    }''';
+    expect(() => Thing.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        throwsA(predicate((Object? e) => e is InvalidJsonSchemaException)));
   });
 
   test('Load defaultEndpoint wrong element thing', () {
-    final String json = """{
+    const String json = '''
+    {
       "thingId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "policyId": "s3i:00641896-cb2d-4aeb-9680-91c1bdf76064",
       "attributes": {
         "allEndpoints": "abc"
       }
-    }""";
-    expect(() => Thing.fromJson(jsonDecode(json)),
-        throwsA(predicate((e) => e is TypeError)));
+    }''';
+    expect(() => Thing.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        throwsA(predicate((Object? e) => e is InvalidJsonSchemaException)));
   });
 
   test('Load complex thing 1 - Error value', () {
-    final String json = """{
+    const String json = '''
+    {
     "thingId": "s3i:d96f6fbe-a0f4-41ad-b1ec-bbbe1cd6f0c3",
     "policyId": "s3i:d96f6fbe-a0f4-41ad-b1ec-bbbe1cd6f0c3",
     "attributes": {
@@ -125,23 +134,28 @@ void mainThingTests() {
             ]
         }
     }
-    }""";
-    expect(() => Thing.fromJson(jsonDecode(json)),
-        throwsA(predicate((e) => e is TypeError)));
+    }''';
+    expect(() => Thing.fromJson(jsonDecode(json) as Map<String, dynamic>),
+        throwsA(predicate((Object? e) => e is InvalidJsonSchemaException)));
   });
 
   test('Complex thing 2', () {
-    final String json = """{
+    const String json = '''
+    {
     "thingId": "s3i:847dc67e-9dad-4415-8e58-819b724a1a8f",
     "policyId": "s3i:847dc67e-9dad-4415-8e58-819b724a1a8f",
     "attributes": {
-        "ownedBy": "606d8b38-4c3f-46bd-9482-86748e108f32",
-        "allEndpoints": [
-            "s3ibs://s3i:847dc67e-9dad-4415-8e58-819b724a1a8f"
-        ],
         "name": "Mini Tractor",
         "type": "component",
         "dataModel": "fml40",
+        "allEndpoints": [
+            "s3ibs://s3i:847dc67e-9dad-4415-8e58-819b724a1a8f"
+        ],
+        "location": {
+            "latitude": 6.078015,
+            "longitude": 50.777592
+        },
+        "ownedBy": "606d8b38-4c3f-46bd-9482-86748e108f32",
         "thingStructure": {
             "class": "ml40::Thing",
             "links": [
@@ -312,17 +326,15 @@ void mainThingTests() {
                     }
                 }
             ]
-        },
-        "location": {
-            "longitude": "ditto-feature:id1",
-            "latitude": "ditto-feature:id2"
         }
     }
-    }""";
-    final thing = Thing.fromJson(jsonDecode(json));
-    expect(thing.id, "s3i:847dc67e-9dad-4415-8e58-819b724a1a8f");
-    //final String newJson = jsonEncode(thing.toJson());
-    //TODO: create second thing from newJson and compare
+    }''';
+    final Thing thing =
+        Thing.fromJson(jsonDecode(json) as Map<String, dynamic>);
+    expect(thing.id, 's3i:847dc67e-9dad-4415-8e58-819b724a1a8f');
+    final String newJson = jsonEncode(thing.toJson());
+    expect(newJson.replaceAll(RegExp(' {1,}'), ''),
+        json.replaceAll(RegExp(' {1,}'), '').replaceAll('\n', ''));
   });
 }
 
