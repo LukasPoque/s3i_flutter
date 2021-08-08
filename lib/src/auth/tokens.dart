@@ -168,7 +168,7 @@ class RefreshToken extends JsonWebToken {
     if (!decodedPayload.containsKey(_payloadKeyType)) {
       throw const FormatException('Not type claim in payload');
     }
-    if (decodedPayload[_payloadKeyType] != _payloadValueRefresh ||
+    if (decodedPayload[_payloadKeyType] != _payloadValueRefresh &&
         decodedPayload[_payloadKeyType] != _payloadValueOffline) {
       throw const FormatException('Wrong type claim in payload');
     }
