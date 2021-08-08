@@ -47,50 +47,58 @@ class Thing extends Entry {
 
   /// Creates a [Thing] from a decoded [json] entry.
   ///
-  /// Could throw [InvalidJsonSchemaException], [JsonMissingKeyException] and
-  /// [TypeError] if something went wrong during the parsing to the
-  /// directory objects.
+  /// Could throw [InvalidJsonSchemaException] or a specific
+  /// [JsonMissingKeyException] and if something went wrong during the parsing
+  /// to the directory objects.
   factory Thing.fromJson(Map<String, dynamic> map) {
-    final String tId = map.containsKey(JsonKey.thingId)
-        ? map[JsonKey.thingId] as String
-        : throw JsonMissingKeyException(JsonKey.thingId, map.toString());
-    final Thing internalThing = Thing(tId);
-    if (map.containsKey(JsonKey.attributes)) {
-      final Map<String, dynamic> attributesMap =
-          map[JsonKey.attributes] as Map<String, dynamic>;
-      internalThing.name = attributesMap[JsonKey.name] as String?;
-      try {
-        internalThing.thingType = attributesMap.containsKey(JsonKey.thingType)
-            ? _createThingType(attributesMap[JsonKey.thingType] as String)
-            : null;
-      } on FallThroughError {
-        throw InvalidJsonSchemaException('unknown thing type', map.toString());
+    try {
+      final String tId = map.containsKey(JsonKey.thingId)
+          ? map[JsonKey.thingId] as String
+          : throw JsonMissingKeyException(JsonKey.thingId, map.toString());
+      final Thing internalThing = Thing(tId);
+      if (map.containsKey(JsonKey.attributes)) {
+        final Map<String, dynamic> attributesMap =
+            map[JsonKey.attributes] as Map<String, dynamic>;
+        internalThing.name = attributesMap[JsonKey.name] as String?;
+        try {
+          internalThing.thingType = attributesMap.containsKey(JsonKey.thingType)
+              ? _createThingType(attributesMap[JsonKey.thingType] as String)
+              : null;
+        } on FallThroughError {
+          throw InvalidJsonSchemaException(
+              'unknown thing type', map.toString());
+        } on TypeError {
+          throw InvalidJsonSchemaException(
+              'thing type is no string', map.toString());
+        }
+        internalThing
+          ..dataModel = attributesMap[JsonKey.dataModel] as String?
+          ..publicKey = attributesMap[JsonKey.publicKey] as String?
+          ..allEndpoints = attributesMap.containsKey(JsonKey.allEndpoints)
+              ? _createEndpointList(
+                  attributesMap[JsonKey.allEndpoints] as List<dynamic>)
+              : null
+          ..defaultEndpoint = attributesMap.containsKey(JsonKey.defaultEndpoint)
+              ? Endpoint(attributesMap[JsonKey.defaultEndpoint] as String)
+              : null
+          ..defaultHMI = attributesMap[JsonKey.defaultHMI] as String?
+          ..location = attributesMap.containsKey(JsonKey.location)
+              ? Location.fromJson(
+                  attributesMap[JsonKey.location] as Map<String, dynamic>)
+              : null
+          ..ownedBy = attributesMap[JsonKey.ownedBy] as String?
+          ..administratedBy = attributesMap[JsonKey.administratedBy] as String?
+          ..usedBy = attributesMap[JsonKey.usedBy] as String?
+          ..represents = attributesMap[JsonKey.represents] as String?
+          ..thingStructure = attributesMap.containsKey(JsonKey.thingStructure)
+              ? DirObject.fromJson(
+                  attributesMap[JsonKey.thingStructure] as Map<String, dynamic>)
+              : null;
       }
-      internalThing
-        ..dataModel = attributesMap[JsonKey.dataModel] as String?
-        ..publicKey = attributesMap[JsonKey.publicKey] as String?
-        ..allEndpoints = attributesMap.containsKey(JsonKey.allEndpoints)
-            ? _createEndpointList(
-                attributesMap[JsonKey.allEndpoints] as List<dynamic>)
-            : null
-        ..defaultEndpoint = attributesMap.containsKey(JsonKey.defaultEndpoint)
-            ? Endpoint(attributesMap[JsonKey.defaultEndpoint] as String)
-            : null
-        ..defaultHMI = attributesMap[JsonKey.defaultHMI] as String?
-        ..location = attributesMap.containsKey(JsonKey.location)
-            ? Location.fromJson(
-                attributesMap[JsonKey.location] as Map<String, dynamic>)
-            : null
-        ..ownedBy = attributesMap[JsonKey.ownedBy] as String?
-        ..administratedBy = attributesMap[JsonKey.administratedBy] as String?
-        ..usedBy = attributesMap[JsonKey.usedBy] as String?
-        ..represents = attributesMap[JsonKey.represents] as String?
-        ..thingStructure = attributesMap.containsKey(JsonKey.thingStructure)
-            ? DirObject.fromJson(
-                attributesMap[JsonKey.thingStructure] as Map<String, dynamic>)
-            : null;
+      return internalThing;
+    } on TypeError catch (e) {
+      throw InvalidJsonSchemaException(e.stackTrace.toString(), map.toString());
     }
-    return internalThing;
   }
 
   /// The display name.

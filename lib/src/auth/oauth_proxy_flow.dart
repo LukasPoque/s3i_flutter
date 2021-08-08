@@ -73,6 +73,7 @@ class OAuthProxyFlow extends AuthenticationManager {
   /// from the OAuthProxy is invalid. Throws [MaxRetryException] if there is
   /// no token bundle at the OAuthProxy after [maxRetryPickup] exceeded.
   /// Could throw [FormatException] if the token could not be parsed correctly.
+  /// If there is no internet connection a [SocketException] is thrown.
   @override
   Future<AccessToken> getAccessToken({int tokenValidBuffer = 10}) async {
     if (_accessToken != null && _refreshToken != null) {
@@ -194,17 +195,21 @@ class OAuthProxyFlow extends AuthenticationManager {
   ///
   /// Could throw [InvalidJsonSchemaException] and [FormatException].
   void _parseAndSetTokenResponse(String tokenBundle) {
-    final Map<String, dynamic> jsonB =
-        jsonDecode(tokenBundle) as Map<String, dynamic>;
-    if (jsonB[JsonKey.accessToken] != null &&
-        jsonB[JsonKey.refreshToken] != null) {
-      try {
-        _accessToken = AccessToken(jsonB[JsonKey.accessToken] as String);
-        _refreshToken = RefreshToken(jsonB[JsonKey.refreshToken] as String);
-      } on TypeError {
-        throw const FormatException('Tokens in bundle are not Strings');
+    try {
+      final Map<String, dynamic> jsonB =
+          jsonDecode(tokenBundle) as Map<String, dynamic>;
+      if (jsonB[JsonKey.accessToken] != null &&
+          jsonB[JsonKey.refreshToken] != null) {
+        try {
+          _accessToken = AccessToken(jsonB[JsonKey.accessToken] as String);
+          _refreshToken = RefreshToken(jsonB[JsonKey.refreshToken] as String);
+        } on TypeError {
+          throw const FormatException('Tokens in bundle are not Strings');
+        }
+        return;
       }
-      return;
+    } on TypeError {
+      throw const FormatException('Token bundle could not be parsed to Map');
     }
     throw InvalidJsonSchemaException(
         'ParseTokenResponseBody error', tokenBundle);

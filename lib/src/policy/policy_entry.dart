@@ -26,31 +26,36 @@ class PolicyEntry extends Entry {
   /// Returns a [PolicyEntry] with groups (subjects and resources) specified
   /// in the [map].
   ///
-  /// Throws a [ArgumentError] if the map is empty.
   /// Throws a [JsonMissingKeyException] if there is no `policyId` key in
   /// the [map].
   /// Throws a [InvalidJsonSchemaException] if the `entry` key doesn't contain
   /// valid [PolicyGroup]s.
-  /// Throws a [TypeError] if some values doesn't match the expected value type.
+  /// Throws a [FormatException] if some values doesn't match the expected
+  /// value type.
   factory PolicyEntry.fromJson(Map<String, dynamic> map) {
-    if (map.isEmpty) throw ArgumentError('empty map');
-    final String pId = map.containsKey(JsonKey.policyId)
-        ? map[JsonKey.policyId] as String
-        : throw JsonMissingKeyException(JsonKey.policyId, map.toString());
-    final PolicyEntry pE = PolicyEntry(pId);
+    if (map.isEmpty) throw const FormatException('empty map');
     try {
-      if (map.containsKey(JsonKey.entries)) {
-        final Map<String, dynamic> gro =
-            map[JsonKey.entries] as Map<String, dynamic>;
-        for (final String k in gro.keys) {
-          pE._groups[k] =
-              PolicyGroup.fromJson(k, gro[k] as Map<String, dynamic>);
+      final String pId = map.containsKey(JsonKey.policyId)
+          ? map[JsonKey.policyId] as String
+          : throw JsonMissingKeyException(JsonKey.policyId, map.toString());
+      final PolicyEntry pE = PolicyEntry(pId);
+      try {
+        if (map.containsKey(JsonKey.entries)) {
+          final Map<String, dynamic> gro =
+              map[JsonKey.entries] as Map<String, dynamic>;
+          for (final String k in gro.keys) {
+            pE._groups[k] =
+                PolicyGroup.fromJson(k, gro[k] as Map<String, dynamic>);
+          }
         }
+      } on TypeError catch (e) {
+        throw InvalidJsonSchemaException(
+            e.stackTrace.toString(), map.toString());
       }
+      return pE;
     } on TypeError catch (e) {
-      throw InvalidJsonSchemaException(e.stackTrace.toString(), map.toString());
+      throw FormatException(e.stackTrace.toString());
     }
-    return pE;
   }
 
   /// The key of the special `owner` group.
