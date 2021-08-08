@@ -1,3 +1,10 @@
+## 0.3.0
+
+Add linting rules and fulfill them.
+- add documentation to all public members, classes and methods
+- restructure some of the exceptions and add every thrown exception to the documentation of the method
+- improve tests
+
 ## 0.2.1
 
 Add web support and fix formatting + README.
