@@ -10,55 +10,55 @@ import 'package:uuid/uuid.dart';
 ///
 /// See the [KWH-Standpunkt](https://www.kwh40.de/wp-content/uploads/2020/04/KWH40-Standpunkt-S3I-v2.0.pdf)
 /// for detailed information.
-class Message extends JsonSerializableObject {
+abstract class Message extends JsonSerializableObject {
   /// Creates a new [Message] with a newly generated UUIDv4 if [messageId] is
   /// not set.
   ///
-  /// Set empty defaults for [receivers] and [sender].
+  /// Creates empty defaults for [receivers] and [sender].
   Message(
       {String? messageId,
       this.receivers = const <String>{},
       this.sender = '',
       this.replyingToMessage,
       this.replyToEndpoint}) {
-    identifier = messageId ?? const Uuid().v4();
+    _identifier = messageId ?? const Uuid().v4();
   }
 
-  /// Returns a [Message] with the information stored in the [json].
+  /// Fills this [Message] with the information stored in the [json].
   ///
   /// Throws a [JsonMissingKeyException] if there is missing one of the needed
   /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender])
-  /// in the [map].
+  /// in the [json].
   /// Throws a [InvalidJsonSchemaException] if some values
   /// doesn't match the expected value type.
-  factory Message.fromJson(Map<String, dynamic> json) {
-    if (json.isEmpty) throw const FormatException('empty json map');
+  void generateFromJson(Map<String, dynamic> json) {
     try {
-      final String mId = json.containsKey(BrokerKeys.identifier)
+      _identifier = json.containsKey(BrokerKeys.identifier)
           ? json[BrokerKeys.identifier] as String
           : throw JsonMissingKeyException(
               BrokerKeys.identifier, json.toString());
-      final Message msg = Message(messageId: mId)
-        ..receivers = json.containsKey(BrokerKeys.receivers)
-            ? _createReceiversSet(json[BrokerKeys.receivers] as List<dynamic>)
-            : throw JsonMissingKeyException(
-                BrokerKeys.receivers, json.toString())
-        ..sender = json.containsKey(BrokerKeys.sender)
-            ? json[BrokerKeys.sender] as String
-            : throw JsonMissingKeyException(BrokerKeys.sender, json.toString())
-        ..replyingToMessage = json[BrokerKeys.replyingToMessage] as String?
-        ..replyToEndpoint = json[BrokerKeys.replyToEndpoint] as String?;
-      return msg;
+      receivers = json.containsKey(BrokerKeys.receivers)
+          ? _createReceiversSet(json[BrokerKeys.receivers] as List<dynamic>)
+          : throw JsonMissingKeyException(
+              BrokerKeys.receivers, json.toString());
+      sender = json.containsKey(BrokerKeys.sender)
+          ? json[BrokerKeys.sender] as String
+          : throw JsonMissingKeyException(BrokerKeys.sender, json.toString());
+      replyingToMessage = json[BrokerKeys.replyingToMessage] as String?;
+      replyToEndpoint = json[BrokerKeys.replyToEndpoint] as String?;
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
           e.stackTrace.toString(), json.toString());
     }
   }
 
+  /// Should be not editable from the outside, see [identifier] for the getter.
+  late String _identifier;
+
   /// The unique identifier of this message (UUIDv4).
   ///
   /// Is generated in the constructor if not other specified.
-  late final String identifier;
+  String get identifier => _identifier;
 
   /// All receivers of this message (should be a `s3I:UUIDv4` of the
   /// receiving thing).
@@ -77,7 +77,7 @@ class Message extends JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[BrokerKeys.identifier] = identifier;
+    newJson[BrokerKeys.identifier] = _identifier;
     newJson[BrokerKeys.receivers] = receivers.toList();
     newJson[BrokerKeys.sender] = sender;
     if (replyingToMessage != null)
