@@ -6,6 +6,13 @@ export 'src/auth/client_identity.dart';
 export 'src/auth/oauth_proxy_flow.dart';
 export 'src/auth/tokens.dart';
 
+//broker
+export 'src/broker/attribute_value_messages.dart';
+export 'src/broker/broker_amqp_connector.dart' if(dart.library.io) '';
+export 'src/broker/broker_interfaces.dart';
+export 'src/broker/service_messages.dart';
+export 'src/broker/user_message.dart';
+
 //directory
 export 'src/directory/dir_object.dart';
 export 'src/directory/endpoint.dart';
@@ -18,8 +25,10 @@ export 'src/directory/value.dart';
 export 'src/exceptions/invalid_json_schema_exception.dart';
 export 'src/exceptions/json_missing_key_exception.dart';
 export 'src/exceptions/max_retry_exception.dart';
+export 'src/exceptions/network_authentication_exception.dart';
 export 'src/exceptions/network_response_exception.dart';
 export 'src/exceptions/parse_exception.dart';
+export 'src/exceptions/response_parsing_exception.dart';
 export 'src/exceptions/s3i_exception.dart';
 
 //policy
