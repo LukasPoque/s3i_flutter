@@ -9,7 +9,7 @@ import 'package:s3i_flutter/src/auth/tokens.dart';
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/exceptions/max_retry_exception.dart';
 import 'package:s3i_flutter/src/exceptions/network_response_exception.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// Uses the `S3I-OAuthProxy` to obtain an access and refresh token.
 ///
@@ -87,10 +87,10 @@ class OAuthProxyFlow extends AuthenticationManager {
             await http.post(refreshTokenEndpoint, headers: <String, String>{
           'content-type': 'application/x-www-form-urlencoded'
         }, body: <String, String>{
-          JsonKey.grantType: JsonKey.refreshToken,
-          JsonKey.clientId: clientIdentity.id,
-          JsonKey.clientSecret: clientIdentity.secret,
-          JsonKey.refreshToken: _refreshToken!.originalToken
+          KeycloakKeys.grantType: KeycloakKeys.refreshToken,
+          KeycloakKeys.clientId: clientIdentity.id,
+          KeycloakKeys.clientSecret: clientIdentity.secret,
+          KeycloakKeys.refreshToken: _refreshToken!.originalToken
         });
         if (response.statusCode == 200) {
           try {
@@ -198,11 +198,12 @@ class OAuthProxyFlow extends AuthenticationManager {
     try {
       final Map<String, dynamic> jsonB =
           jsonDecode(tokenBundle) as Map<String, dynamic>;
-      if (jsonB[JsonKey.accessToken] != null &&
-          jsonB[JsonKey.refreshToken] != null) {
+      if (jsonB[KeycloakKeys.accessToken] != null &&
+          jsonB[KeycloakKeys.refreshToken] != null) {
         try {
-          _accessToken = AccessToken(jsonB[JsonKey.accessToken] as String);
-          _refreshToken = RefreshToken(jsonB[JsonKey.refreshToken] as String);
+          _accessToken = AccessToken(jsonB[KeycloakKeys.accessToken] as String);
+          _refreshToken =
+              RefreshToken(jsonB[KeycloakKeys.refreshToken] as String);
         } on TypeError {
           throw const FormatException('Tokens in bundle are not Strings');
         }

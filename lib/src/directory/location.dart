@@ -1,6 +1,6 @@
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/json_serializable_object.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// Represents a `Location` in the S3I-Directory data model.
 ///
@@ -15,12 +15,14 @@ class Location implements JsonSerializableObject {
   /// could not be found in the json. Throws a [TypeError] if the values
   /// couldn't be parsed as double.
   factory Location.fromJson(Map<String, dynamic> json) {
-    final double latitude = json.containsKey(JsonKey.latitude)
-        ? json[JsonKey.latitude] as double
-        : throw JsonMissingKeyException(JsonKey.latitude, json.toString());
-    final double longitude = json.containsKey(JsonKey.longitude)
-        ? json[JsonKey.longitude] as double
-        : throw JsonMissingKeyException(JsonKey.longitude, json.toString());
+    final double latitude = json.containsKey(DirectoryKeys.latitude)
+        ? json[DirectoryKeys.latitude] as double
+        : throw JsonMissingKeyException(
+            DirectoryKeys.latitude, json.toString());
+    final double longitude = json.containsKey(DirectoryKeys.longitude)
+        ? json[DirectoryKeys.longitude] as double
+        : throw JsonMissingKeyException(
+            DirectoryKeys.longitude, json.toString());
     return Location(latitude, longitude);
   }
 
@@ -38,8 +40,8 @@ class Location implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[JsonKey.latitude] = latitude;
-    newJson[JsonKey.longitude] = longitude;
+    newJson[DirectoryKeys.latitude] = latitude;
+    newJson[DirectoryKeys.longitude] = longitude;
     return newJson;
   }
 }

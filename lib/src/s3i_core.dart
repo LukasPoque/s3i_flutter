@@ -5,7 +5,7 @@ import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
 import 'package:s3i_flutter/src/exceptions/network_authentication_exception.dart';
 import 'package:s3i_flutter/src/exceptions/response_parsing_exception.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// The main communication class to the S3I.
 ///
@@ -134,8 +134,8 @@ class S3ICore {
     //to create a valid thing
     if (fields != null) {
       if (fields.fields.isNotEmpty &&
-          !fields.fields.contains(JsonKey.thingId)) {
-        fields.fields.add(JsonKey.thingId);
+          !fields.fields.contains(DittoKeys.thingId)) {
+        fields.fields.add(DittoKeys.thingId);
       }
     }
     final Response response = await getDirectory(

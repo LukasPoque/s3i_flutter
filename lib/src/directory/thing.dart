@@ -4,7 +4,7 @@ import 'package:s3i_flutter/src/directory/endpoint.dart';
 import 'package:s3i_flutter/src/directory/location.dart';
 import 'package:s3i_flutter/src/entry.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 // TODO(poq): add ditto specific attributes like definition,_revision,_modified
 
@@ -52,18 +52,20 @@ class Thing extends Entry {
   /// to the directory objects.
   factory Thing.fromJson(Map<String, dynamic> map) {
     try {
-      final String tId = map.containsKey(JsonKey.thingId)
-          ? map[JsonKey.thingId] as String
-          : throw JsonMissingKeyException(JsonKey.thingId, map.toString());
+      final String tId = map.containsKey(DittoKeys.thingId)
+          ? map[DittoKeys.thingId] as String
+          : throw JsonMissingKeyException(DittoKeys.thingId, map.toString());
       final Thing internalThing = Thing(tId);
-      if (map.containsKey(JsonKey.attributes)) {
+      if (map.containsKey(DittoKeys.attributes)) {
         final Map<String, dynamic> attributesMap =
-            map[JsonKey.attributes] as Map<String, dynamic>;
-        internalThing.name = attributesMap[JsonKey.name] as String?;
+            map[DittoKeys.attributes] as Map<String, dynamic>;
+        internalThing.name = attributesMap[DirectoryKeys.name] as String?;
         try {
-          internalThing.thingType = attributesMap.containsKey(JsonKey.thingType)
-              ? _createThingType(attributesMap[JsonKey.thingType] as String)
-              : null;
+          internalThing.thingType =
+              attributesMap.containsKey(DirectoryKeys.thingType)
+                  ? _createThingType(
+                      attributesMap[DirectoryKeys.thingType] as String)
+                  : null;
         } on FallThroughError {
           throw InvalidJsonSchemaException(
               'unknown thing type', map.toString());
@@ -72,27 +74,30 @@ class Thing extends Entry {
               'thing type is no string', map.toString());
         }
         internalThing
-          ..dataModel = attributesMap[JsonKey.dataModel] as String?
-          ..publicKey = attributesMap[JsonKey.publicKey] as String?
-          ..allEndpoints = attributesMap.containsKey(JsonKey.allEndpoints)
+          ..dataModel = attributesMap[DirectoryKeys.dataModel] as String?
+          ..publicKey = attributesMap[DirectoryKeys.publicKey] as String?
+          ..allEndpoints = attributesMap.containsKey(DirectoryKeys.allEndpoints)
               ? _createEndpointList(
-                  attributesMap[JsonKey.allEndpoints] as List<dynamic>)
+                  attributesMap[DirectoryKeys.allEndpoints] as List<dynamic>)
               : null
-          ..defaultEndpoint = attributesMap.containsKey(JsonKey.defaultEndpoint)
-              ? Endpoint(attributesMap[JsonKey.defaultEndpoint] as String)
+          ..defaultEndpoint = attributesMap
+                  .containsKey(DirectoryKeys.defaultEndpoint)
+              ? Endpoint(attributesMap[DirectoryKeys.defaultEndpoint] as String)
               : null
-          ..defaultHMI = attributesMap[JsonKey.defaultHMI] as String?
-          ..location = attributesMap.containsKey(JsonKey.location)
+          ..defaultHMI = attributesMap[DirectoryKeys.defaultHMI] as String?
+          ..location = attributesMap.containsKey(DirectoryKeys.location)
               ? Location.fromJson(
-                  attributesMap[JsonKey.location] as Map<String, dynamic>)
+                  attributesMap[DirectoryKeys.location] as Map<String, dynamic>)
               : null
-          ..ownedBy = attributesMap[JsonKey.ownedBy] as String?
-          ..administratedBy = attributesMap[JsonKey.administratedBy] as String?
-          ..usedBy = attributesMap[JsonKey.usedBy] as String?
-          ..represents = attributesMap[JsonKey.represents] as String?
-          ..thingStructure = attributesMap.containsKey(JsonKey.thingStructure)
-              ? DirObject.fromJson(
-                  attributesMap[JsonKey.thingStructure] as Map<String, dynamic>)
+          ..ownedBy = attributesMap[DirectoryKeys.ownedBy] as String?
+          ..administratedBy =
+              attributesMap[DirectoryKeys.administratedBy] as String?
+          ..usedBy = attributesMap[DirectoryKeys.usedBy] as String?
+          ..represents = attributesMap[DirectoryKeys.represents] as String?
+          ..thingStructure = attributesMap
+                  .containsKey(DirectoryKeys.thingStructure)
+              ? DirObject.fromJson(attributesMap[DirectoryKeys.thingStructure]
+                  as Map<String, dynamic>)
               : null;
       }
       return internalThing;
@@ -146,29 +151,32 @@ class Thing extends Entry {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[JsonKey.thingId] = id;
-    newJson[JsonKey.policyId] = id;
+    newJson[DittoKeys.thingId] = id;
+    newJson[DittoKeys.policyId] = id;
     final Map<String, dynamic> attributesMap = <String, dynamic>{};
-    if (name != null) attributesMap[JsonKey.name] = name;
+    if (name != null) attributesMap[DirectoryKeys.name] = name;
     if (thingType != null)
-      attributesMap[JsonKey.thingType] = _thingTypeToString(thingType!);
-    if (dataModel != null) attributesMap[JsonKey.dataModel] = dataModel;
-    if (publicKey != null) attributesMap[JsonKey.publicKey] = publicKey;
+      attributesMap[DirectoryKeys.thingType] = _thingTypeToString(thingType!);
+    if (dataModel != null) attributesMap[DirectoryKeys.dataModel] = dataModel;
+    if (publicKey != null) attributesMap[DirectoryKeys.publicKey] = publicKey;
     if (allEndpoints != null)
-      attributesMap[JsonKey.allEndpoints] =
+      attributesMap[DirectoryKeys.allEndpoints] =
           allEndpoints!.map((Endpoint e) => e.endpoint).toList();
     if (defaultEndpoint != null)
-      attributesMap[JsonKey.defaultEndpoint] = defaultEndpoint;
-    if (defaultHMI != null) attributesMap[JsonKey.defaultHMI] = defaultHMI;
-    if (location != null) attributesMap[JsonKey.location] = location!.toJson();
-    if (ownedBy != null) attributesMap[JsonKey.ownedBy] = ownedBy;
+      attributesMap[DirectoryKeys.defaultEndpoint] = defaultEndpoint;
+    if (defaultHMI != null)
+      attributesMap[DirectoryKeys.defaultHMI] = defaultHMI;
+    if (location != null)
+      attributesMap[DirectoryKeys.location] = location!.toJson();
+    if (ownedBy != null) attributesMap[DirectoryKeys.ownedBy] = ownedBy;
     if (administratedBy != null)
-      attributesMap[JsonKey.administratedBy] = administratedBy;
-    if (usedBy != null) attributesMap[JsonKey.usedBy] = usedBy;
-    if (represents != null) attributesMap[JsonKey.represents] = represents;
+      attributesMap[DirectoryKeys.administratedBy] = administratedBy;
+    if (usedBy != null) attributesMap[DirectoryKeys.usedBy] = usedBy;
+    if (represents != null)
+      attributesMap[DirectoryKeys.represents] = represents;
     if (thingStructure != null)
-      attributesMap[JsonKey.thingStructure] = thingStructure!.toJson();
-    if (attributesMap.isNotEmpty) newJson[JsonKey.attributes] = attributesMap;
+      attributesMap[DirectoryKeys.thingStructure] = thingStructure!.toJson();
+    if (attributesMap.isNotEmpty) newJson[DittoKeys.attributes] = attributesMap;
     return newJson;
   }
 

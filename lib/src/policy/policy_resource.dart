@@ -1,7 +1,7 @@
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/json_serializable_object.dart';
 import 'package:s3i_flutter/src/policy/policy_subject.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// The type of a granted/revoked permission.
 ///
@@ -46,11 +46,12 @@ class PolicyResource implements JsonSerializableObject {
   factory PolicyResource.fromJson(String path, Map<String, dynamic> json) {
     final PolicyResource pR = PolicyResource(path);
     try {
-      if (json.containsKey(JsonKey.grant)) {
-        pR.grant = _createPermissionSet(json[JsonKey.grant] as List<dynamic>);
+      if (json.containsKey(DittoKeys.grant)) {
+        pR.grant = _createPermissionSet(json[DittoKeys.grant] as List<dynamic>);
       }
-      if (json.containsKey(JsonKey.revoke)) {
-        pR.revoke = _createPermissionSet(json[JsonKey.revoke] as List<dynamic>);
+      if (json.containsKey(DittoKeys.revoke)) {
+        pR.revoke =
+            _createPermissionSet(json[DittoKeys.revoke] as List<dynamic>);
       }
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
@@ -83,8 +84,8 @@ class PolicyResource implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[JsonKey.grant] = _createPermissionString(grant);
-    newJson[JsonKey.revoke] = _createPermissionString(revoke);
+    newJson[DittoKeys.grant] = _createPermissionString(grant);
+    newJson[DittoKeys.revoke] = _createPermissionString(revoke);
     return newJson;
   }
 
