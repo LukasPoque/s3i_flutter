@@ -12,9 +12,9 @@ import 'package:s3i_flutter/src/utils/json_keys.dart';
 /// The baseclass for all communication interfaces with the `S3I-Broker`.
 ///
 /// There are two different approaches to receive messages from the Broker:
-/// - [ActiveBrokerInterface] for interfaces who inform you whenever a new
+/// - [ActiveBrokerInterface] for interfaces that inform you whenever a new
 /// message is available.
-/// - [PassiveBrokerInterface] for interfaces where you need to explicit ask
+/// - [PassiveBrokerInterface] for interfaces where you need to explicitly ask
 /// if there are new messages.
 abstract class BrokerInterface {
   /// Creates a [BrokerInterface] with the given [authManager].

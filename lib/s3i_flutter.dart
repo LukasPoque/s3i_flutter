@@ -1,5 +1,7 @@
 library s3i_flutter;
 
+export '' if (dart.library.io) 'src/broker/broker_amqp_connector.dart';
+
 //auth
 export 'src/auth/authentication_manager.dart';
 export 'src/auth/client_identity.dart';
@@ -8,7 +10,6 @@ export 'src/auth/tokens.dart';
 
 //broker
 export 'src/broker/attribute_value_messages.dart';
-export 'src/broker/broker_amqp_connector.dart' if(dart.library.io) '';
 export 'src/broker/broker_interfaces.dart';
 export 'src/broker/service_messages.dart';
 export 'src/broker/user_message.dart';
