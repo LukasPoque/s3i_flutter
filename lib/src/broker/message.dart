@@ -5,6 +5,7 @@ import 'package:s3i_flutter/src/utils/json_keys.dart';
 import 'package:uuid/uuid.dart';
 
 // TODO(poq): add support for encrypted messages
+// TODO(poq): add messageType check in every subclass
 
 /// The baseclass for decrypted `S3I-B-Messages`.
 ///
