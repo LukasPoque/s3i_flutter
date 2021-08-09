@@ -24,34 +24,6 @@ abstract class Message extends JsonSerializableObject {
     _identifier = messageId ?? const Uuid().v4();
   }
 
-  /// Fills this [Message] with the information stored in the [json].
-  ///
-  /// Throws a [JsonMissingKeyException] if there is missing one of the needed
-  /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender])
-  /// in the [json].
-  /// Throws a [InvalidJsonSchemaException] if some values
-  /// doesn't match the expected value type.
-  void generateFromJson(Map<String, dynamic> json) {
-    try {
-      _identifier = json.containsKey(BrokerKeys.identifier)
-          ? json[BrokerKeys.identifier] as String
-          : throw JsonMissingKeyException(
-              BrokerKeys.identifier, json.toString());
-      receivers = json.containsKey(BrokerKeys.receivers)
-          ? _createReceiversSet(json[BrokerKeys.receivers] as List<dynamic>)
-          : throw JsonMissingKeyException(
-              BrokerKeys.receivers, json.toString());
-      sender = json.containsKey(BrokerKeys.sender)
-          ? json[BrokerKeys.sender] as String
-          : throw JsonMissingKeyException(BrokerKeys.sender, json.toString());
-      replyingToMessage = json[BrokerKeys.replyingToMessage] as String?;
-      replyToEndpoint = json[BrokerKeys.replyToEndpoint] as String?;
-    } on TypeError catch (e) {
-      throw InvalidJsonSchemaException(
-          e.stackTrace.toString(), json.toString());
-    }
-  }
-
   /// Should be not editable from the outside, see [identifier] for the getter.
   late String _identifier;
 
@@ -85,6 +57,34 @@ abstract class Message extends JsonSerializableObject {
     if (replyToEndpoint != null)
       newJson[BrokerKeys.replyToEndpoint] = replyToEndpoint;
     return newJson;
+  }
+
+  /// Fills this [Message] with the information stored in the [json].
+  ///
+  /// Throws a [JsonMissingKeyException] if there is missing one of the needed
+  /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender])
+  /// in the [json].
+  /// Throws a [InvalidJsonSchemaException] if some values
+  /// doesn't match the expected value type.
+  void generateFromJson(Map<String, dynamic> json) {
+    try {
+      _identifier = json.containsKey(BrokerKeys.identifier)
+          ? json[BrokerKeys.identifier] as String
+          : throw JsonMissingKeyException(
+              BrokerKeys.identifier, json.toString());
+      receivers = json.containsKey(BrokerKeys.receivers)
+          ? _createReceiversSet(json[BrokerKeys.receivers] as List<dynamic>)
+          : throw JsonMissingKeyException(
+              BrokerKeys.receivers, json.toString());
+      sender = json.containsKey(BrokerKeys.sender)
+          ? json[BrokerKeys.sender] as String
+          : throw JsonMissingKeyException(BrokerKeys.sender, json.toString());
+      replyingToMessage = json[BrokerKeys.replyingToMessage] as String?;
+      replyToEndpoint = json[BrokerKeys.replyToEndpoint] as String?;
+    } on TypeError catch (e) {
+      throw InvalidJsonSchemaException(
+          e.stackTrace.toString(), json.toString());
+    }
   }
 
   static Set<String> _createReceiversSet(List<dynamic> jsonList) {
