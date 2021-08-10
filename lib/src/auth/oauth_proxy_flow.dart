@@ -15,6 +15,10 @@ import 'package:s3i_flutter/src/utils/json_key.dart';
 ///
 /// Does not refreshes the token automatically, only if [getAccessToken] is
 /// called and the accessToken is expired.
+///
+/// Make sure that your client allows redirecting to the S3I-OAuthProxy
+/// by adding `https://auth.s3i.vswf.dev/*` to the redirecting uris in the
+/// S3I-IdentityProvider.
 class OAuthProxyFlow extends AuthenticationManager {
   /// Creates a new [OAuthProxyFlow] object.
   OAuthProxyFlow(ClientIdentity clientIdentity,
