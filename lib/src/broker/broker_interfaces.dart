@@ -73,6 +73,19 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
   /// Creates a new [ActiveBrokerInterface] with the given [authManager].
   ActiveBrokerInterface(AuthenticationManager authManager) : super(authManager);
 
+  /// All registered functions which are invoked if an error occurred during the
+  /// message consuming.
+  final Set<Function(String, String)> _callbacksConsumingFailed =
+      <Function(String, String)>{};
+
+  /// All registered functions which are invoked if a message could not be sent.
+  final Set<Function(Message, String)> _callbacksSendMessageFailed =
+      <Function(Message, String)>{};
+
+  /// All registered functions which are invoked if a message is sent.
+  final Set<Function(Message)> _callbacksSendMessageSucceeded =
+      <Function(Message)>{};
+
   /// All registered functions which are invoked if an invalid message is
   /// received.
   final Set<Function(String, String)> _callbacksForInvalidMessage =
@@ -151,6 +164,57 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
     } on InvalidJsonSchemaException catch (e) {
       _notifyInvalidMessageReceived(messageString, e.toString());
     }
+  }
+
+  /// Subscribes to all errors during consuming from the endpoints.
+  /// (ConsumingFailed-Event).
+  ///
+  /// The first passed String is the endpoint and the second one is a
+  /// textual representation of the error during the connection process.
+  void subscribeConsumingFailed(Function(String, String) callback) {
+    _callbacksConsumingFailed.add(callback);
+  }
+
+  /// Unsubscribes the callback from the ConsumingFailed-Event.
+  ///
+  /// The [callback] needs to be exactly the same as the one used while
+  /// subscribing.
+  void unsubscribeConsumingFailed(Function(String, String) callback) {
+    _callbacksConsumingFailed.remove(callback);
+  }
+
+  /// Subscribes to all messages which couldn't be sent correctly
+  /// (SendMessageFailed-Event).
+  ///
+  /// The first passed Message is the original message and the second one is a
+  /// textual representation of the error during the sending process.
+  void subscribeSendMessageFailed(Function(Message, String) callback) {
+    _callbacksSendMessageFailed.add(callback);
+  }
+
+  /// Unsubscribes the callback from the SendMessageFailed-Event.
+  ///
+  /// The [callback] needs to be exactly the same as the one used while
+  /// subscribing.
+  void unsubscribeSendMessageFailed(Function(Message, String) callback) {
+    _callbacksSendMessageFailed.remove(callback);
+  }
+
+  /// Subscribes to all received messages which can't be parsed correctly
+  /// (SendMessageSucceeded-Event).
+  ///
+  /// The first passed String is the original message and the second one is a
+  /// textual representation of the error during the parsing process.
+  void subscribeSendMessageSucceeded(Function(Message) callback) {
+    _callbacksSendMessageSucceeded.add(callback);
+  }
+
+  /// Unsubscribes the callback from the SendMessageSucceeded-Event.
+  ///
+  /// The [callback] needs to be exactly the same as the one used while
+  /// subscribing.
+  void unsubscribeSendMessageSucceeded(Function(Message) callback) {
+    _callbacksSendMessageSucceeded.remove(callback);
   }
 
   /// Subscribes to all received messages which can't be parsed correctly
@@ -233,6 +297,28 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
   /// subscribing.
   void unsubscribeGetValueReplyReceived(Function(GetValueReply) callback) {
     _callbacksForGetValueReply.remove(callback);
+  }
+
+  /// PROTECTED: DO NOT USE UNLESS YOU ARE AN [ActiveBrokerInterface].
+  void notifyConsumingFailed(String endpoint, String error) {
+    for (final Function(String, String) callback in _callbacksConsumingFailed) {
+      callback(endpoint, endpoint);
+    }
+  }
+
+  /// PROTECTED: DO NOT USE UNLESS YOU ARE AN [ActiveBrokerInterface].
+  void notifySendMessageFailed(Message message, String error) {
+    for (final Function(Message, String) callback
+        in _callbacksSendMessageFailed) {
+      callback(message, error);
+    }
+  }
+
+  /// PROTECTED: DO NOT USE UNLESS YOU ARE AN [ActiveBrokerInterface].
+  void notifySendMessageSucceeded(Message message) {
+    for (final Function(Message) callback in _callbacksSendMessageSucceeded) {
+      callback(message);
+    }
   }
 
   void _notifyInvalidMessageReceived(String original, String error) {
