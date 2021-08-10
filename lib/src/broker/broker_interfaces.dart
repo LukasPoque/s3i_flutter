@@ -302,7 +302,7 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
   /// PROTECTED: DO NOT USE UNLESS YOU ARE AN [ActiveBrokerInterface].
   void notifyConsumingFailed(String endpoint, String error) {
     for (final Function(String, String) callback in _callbacksConsumingFailed) {
-      callback(endpoint, endpoint);
+      callback(endpoint, error);
     }
   }
 
