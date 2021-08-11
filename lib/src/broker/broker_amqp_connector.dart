@@ -1,11 +1,39 @@
 import 'dart:convert';
 
 import 'package:dart_amqp/dart_amqp.dart';
-import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
 import 'package:s3i_flutter/src/auth/tokens.dart';
 import 'package:s3i_flutter/src/broker/broker_interfaces.dart';
 import 'package:s3i_flutter/src/broker/message.dart';
+import 'package:s3i_flutter/src/exceptions/network_authentication_exception.dart';
+import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
+
+///Creates a new [BrokerAmqpConnector].
+///
+/// The instance is created with the [authManager] and the optional constructor
+/// arguments in the [args] (the string-keys should match the name of the
+/// parameters).
+///
+/// This is needed to use the same interface on web and other platforms.
+ActiveBrokerInterface getBrokerDefaultConnector(
+    AuthenticationManager authManager,
+    {Map<String, dynamic> args = const <String, dynamic>{}}) {
+  final String brokerHost =
+      args['brokerHost'] as String? ?? 'rabbitmq.s3i.vswf.dev';
+  final int port = args['port'] as int? ?? 5672;
+  final String virtualHost = args['virtualHost'] as String? ?? 's3i';
+  final int maxConnectionAttempts = args['maxConnectionAttempts'] as int? ?? 3;
+  final Duration reconnectWaitTime = args['reconnectWaitTime'] as Duration? ??
+      const Duration(milliseconds: 1500);
+  final String exchangeName = args['exchangeName'] as String? ?? 'demo.direct';
+  return BrokerAmqpConnector(authManager,
+      brokerHost: brokerHost,
+      port: port,
+      virtualHost: virtualHost,
+      maxConnectionAttempts: maxConnectionAttempts,
+      reconnectWaitTime: reconnectWaitTime,
+      exchangeName: exchangeName);
+}
 
 /// This [ActiveBrokerInterface] implementation uses the native messaging
 /// protocol of the S3I-Broker: AMQP.
@@ -58,6 +86,8 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
 
   bool _keepAlive = false;
 
+  bool _inBrokerConstruction = false;
+
   /// Starts the connection to the S3I-Broker.
   ///
   /// Returns an empty string if everything is ready or the error occurred
@@ -65,9 +95,14 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   Future<String> connectToBroker() async {
     if (_keepAlive || _endpointConsumer.isNotEmpty) return 'already connected';
     _keepAlive = true;
-    return _establishConnectionToBroker()
+    _inBrokerConstruction = true;
+    final String createInfo = await _establishConnectionToBroker()
         .then((_) => '')
-        .catchError((Object e) => e.toString());
+        .catchError((Object e) => e.toString())
+        .whenComplete(() {
+      _inBrokerConstruction = false;
+    });
+    return createInfo;
   }
 
   /// Disconnects from the S3I-Broker.
@@ -76,6 +111,7 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// from the broker. This cleans all consuming endpoints.
   Future<void> disconnectFromBroker() async {
     _keepAlive = false;
+    _inBrokerConstruction = false;
     await _stopListeningToEndpoints(_endpointConsumer.keys);
     _endpointConsumer.clear();
     await _resetConnectionToBroker();
@@ -86,20 +122,27 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// The endpoints should be in the correct format (s3ib://s3i:+ UUIDv4 for
   /// decrypted communication or s3ibs://s3i: + UUIDv4 for encrypted messages).
   ///
-  /// [connectToBroker] should be called first, otherwise a
-  /// SendMessageFailed-Event is emitted.
+  /// Connects to the Broker if there is no connection open at the time.
   @override
-  void sendMessage(Message message, Set<String> endpoints) {
+  Future<void> sendMessage(Message message, Set<String> endpoints) async {
     if (_amqpClient == null || _channel == null || _exchange == null) {
-      notifySendMessageFailed(message, S3IException('invalid broker state'));
-    } else {
-      for (final String edp in endpoints) {
-        try {
-          _exchange!.publish(jsonEncode(message.toJson()), edp);
-          notifySendMessageSucceeded(message);
-        } on ChannelException catch (e) {
-          notifySendMessageFailed(message, e);
+      if (_inBrokerConstruction) {
+        notifySendMessageFailed(message, S3IException('invalid broker state'));
+        return;
+      } else {
+        final String creationInfo = await connectToBroker();
+        if (creationInfo.isNotEmpty) {
+          notifySendMessageFailed(message, S3IException(creationInfo));
+          return;
         }
+      }
+    }
+    for (final String edp in endpoints) {
+      try {
+        _exchange!.publish(jsonEncode(message.toJson()), edp);
+        notifySendMessageSucceeded(message);
+      } on ChannelException catch (e) {
+        notifySendMessageFailed(message, e);
       }
     }
   }
@@ -109,23 +152,37 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// The endpoints should be in the correct format (s3ib://s3i:+ UUIDv4 for
   /// decrypted communication or s3ibs://s3i: + UUIDv4 for encrypted messages).
   ///
-  /// [connectToBroker] should be called first, otherwise a
-  /// ConsumingFailed-Event is emitted.
+  /// Connects to the Broker if there is no connection open at the time.
   @override
-  void startConsuming(String endpoint) {
+  Future<void> startConsuming(String endpoint) async {
     if (_amqpClient == null || _channel == null || _exchange == null) {
-      notifyConsumingFailed(endpoint, S3IException('invalid broker state'));
-    } else {
-      _connectToEndpoint(endpoint).catchError((Object e) {
-        notifyConsumingFailed(endpoint, S3IException(e.toString()));
-      });
+      if (_inBrokerConstruction) {
+        notifyConsumingFailed(endpoint, S3IException('invalid broker state'));
+        return;
+      } else {
+        final String creationInfo = await connectToBroker();
+        if (creationInfo.isNotEmpty) {
+          notifyConsumingFailed(endpoint, S3IException(creationInfo));
+          return;
+        }
+      }
     }
+    _connectToEndpoint(endpoint).catchError((Object e) {
+      notifyConsumingFailed(endpoint, S3IException(e.toString()));
+    });
   }
 
+  /// Stops consuming on the [endpoint].
+  ///
+  /// The endpoints should be in the correct format (s3ib://s3i:+ UUIDv4 for
+  /// decrypted communication or s3ibs://s3i: + UUIDv4 for encrypted messages).
+  ///
+  /// Disconnects from the Broker if no one is listening.
   @override
   Future<void> stopConsuming(String endpoint) async {
     await _stopListeningToEndpoint(endpoint);
     _endpointConsumer.remove(endpoint);
+    if (_endpointConsumer.isEmpty) disconnectFromBroker();
   }
 
   /// Creates a new connection to the broker.
@@ -135,6 +192,8 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// Throws a [NetworkResponseException] if no token could be received. Throws
   /// [S3IException] if an error occurs during the setup of the amqp part.
   /// See dart_amqp for more exceptions that could be thrown.
+  ///
+  /// Make sure to set [_inBrokerConstruction] before and after.
   Future<void> _establishConnectionToBroker() async {
     _resetConnectionToBroker();
     AccessToken token;
@@ -211,7 +270,10 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
     _endpointConsumer.clear();
     await _resetConnectionToBroker();
     //rebuild all old connections
-    await _establishConnectionToBroker();
+    _inBrokerConstruction = true;
+    await _establishConnectionToBroker().whenComplete(() {
+      _inBrokerConstruction = false;
+    });
     for (final String end in oldSubEndpoints) {
       await _connectToEndpoint(end).catchError((Object e) {
         notifyConsumingFailed(end, S3IException(e.toString()));
