@@ -190,7 +190,7 @@ class RefreshToken extends JsonWebToken {
 
   @override
   DateTime getExpirationDate() {
-    if (decodedPayload[_payloadKeyType] != _payloadValueRefresh) {
+    if (decodedPayload[_payloadKeyType] == _payloadValueRefresh) {
       //refresh token
       try {
         final int secSinceEpoch = decodedPayload[_payloadKeyExpire] as int;
