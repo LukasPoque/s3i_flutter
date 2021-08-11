@@ -76,6 +76,7 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// from the broker. This cleans all consuming endpoints.
   Future<void> disconnectFromBroker() async {
     _keepAlive = false;
+    await _stopListeningToEndpoints(_endpointConsumer.keys);
     _endpointConsumer.clear();
     await _resetConnectionToBroker();
   }
@@ -122,13 +123,9 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   }
 
   @override
-  void stopConsuming(String endpoint) {
-    if (_endpointConsumer.containsKey(endpoint)) {
-      final Consumer consumer = _endpointConsumer[endpoint]!;
-      consumer
-          .cancel(noWait: true)
-          .whenComplete(() => _endpointConsumer.remove(endpoint));
-    }
+  Future<void> stopConsuming(String endpoint) async {
+    await _stopListeningToEndpoint(endpoint);
+    _endpointConsumer.remove(endpoint);
   }
 
   /// Creates a new connection to the broker.
@@ -143,6 +140,8 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
     AccessToken token;
     try {
       token = await authManager.getAccessToken();
+      // trigger keep alive
+      if (_keepAlive) _keepConnectionAlive(token);
     } on Exception catch (e) {
       throw NetworkAuthenticationException(e);
     }
@@ -187,5 +186,44 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
       newMessageReceived(event.payloadAsString);
     });
     _endpointConsumer[endpoint] = consume;
+  }
+
+  /// Cancels all consumers at [endpoints].
+  Future<void> _stopListeningToEndpoints(Iterable<String> endpoints) async {
+    for (final String end in endpoints) {
+      await _stopListeningToEndpoint(end);
+    }
+  }
+
+  /// Cancels the consumer at [endpoint].
+  Future<void> _stopListeningToEndpoint(String endpoint) async {
+    if (_endpointConsumer.containsKey(endpoint)) {
+      final Consumer consumer = _endpointConsumer[endpoint]!;
+      await consumer.cancel();
+    }
+  }
+
+  /// Closes all connections/subscriptions to the broker and reestablish them
+  /// afterwards.
+  Future<void> _reestablishConnection() async {
+    final Set<String> oldSubEndpoints = _endpointConsumer.keys.toSet();
+    await _stopListeningToEndpoints(oldSubEndpoints);
+    _endpointConsumer.clear();
+    await _resetConnectionToBroker();
+    //rebuild all old connections
+    await _establishConnectionToBroker();
+    for (final String end in oldSubEndpoints) {
+      await _connectToEndpoint(end).catchError((Object e) {
+        notifyConsumingFailed(end, S3IException(e.toString()));
+      });
+    }
+  }
+
+  /// Checks the expiration time of the token and reconnects to the Broker
+  /// when it's expired.
+  Future<void> _keepConnectionAlive(AccessToken token) async {
+    Future<void>.delayed(token.timeTillExpiration()).then((dynamic _) {
+      if (_keepAlive) _reestablishConnection();
+    });
   }
 }
