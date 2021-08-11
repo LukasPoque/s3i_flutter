@@ -85,6 +85,11 @@ abstract class JsonWebToken {
   /// if the expiration date could not be found.
   DateTime getExpirationDate();
 
+  /// Returns the duration from now until the token expires.
+  Duration timeTillExpiration() {
+    return getExpirationDate().difference(DateTime.now());
+  }
+
   @override
   String toString() {
     return 'JsonWebToken($originalToken)';
