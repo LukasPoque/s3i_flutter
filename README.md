@@ -38,7 +38,7 @@ For further information see the [KWH Glossar](https://www.kwh40.de/glossar/) and
 
 ## Installing
 
-Please see [Pub.dev](https://pub.dev/packages/s3i_flutter/install) for instructions how to install this package to your flutter app. 
+Please see [pub.dev](https://pub.dev/packages/s3i_flutter/install) for instructions how to install this package to your flutter app. 
 
 If you like this package, consider supporting it by giving a star on [GitHub](https://github.com/LukasPoque/s3i_flutter) and 
 a like on [pub.dev](https://pub.dev/packages/s3i_flutter) :heart:
@@ -47,15 +47,20 @@ a like on [pub.dev](https://pub.dev/packages/s3i_flutter) :heart:
 
 For a basic example application see the [example](https://github.com/LukasPoque/s3i_flutter/tree/master/example).
 
+Use the [documentation](https://pub.dev/documentation/s3i_flutter/latest/s3i_flutter/s3i_flutter-library.html) of this package for 
+explicit information about every public method or class.
+
 ### Setup authentication
 
-First you need to create a `ClientIdentity` used by your app. Please contact the [KWH4.0](https://www.kwh40.de/kontakt/) to get an app specific client.
+First you need to create a `ClientIdentity` used by your app. Please contact the [KWH4.0](https://www.kwh40.de/kontakt/) to get an app 
+specific client. If you need special client settings like redirect urls (e.g. for the use of the S3I-OAuthProxy) please include this in your
+request.
 ```dart
 final clientIdentity = ClientIdentity(<CLIENT-ID>, <CLIENT-SECRET>);
 ```
 
 Now you can pass this to an `AuthenticationManager` of your choice. 
-See [here](https://github.com/LukasPoque/s3i_flutter#auth) for a list of some implementations.
+See [here](https://github.com/LukasPoque/s3i_flutter#Auth) for a list of some implementations.
 In this example we use the `OAuthProxyFlow`. You can specify some scopes to add specific claims in your token.
 ```dart
 final authManager = OAuthProxyFlow(clientIdentity,
@@ -64,24 +69,27 @@ final authManager = OAuthProxyFlow(clientIdentity,
       scopes: ["group", "offline_access"]);
 ```
 
-Last but not least you should use this `AuthenticationManager`-Instance to create a `S3ICore`-Instance.
-```dart
-final s3i = S3ICore(authManager);
-```
-
 If you want to assure that the user is authenticated before going on with other requests 
-you could trigger the auth process explicit by calling the `login()` function:
+you could trigger the auth process explicit by calling the `getAccessToken()` function:
 ````dart
 try {
-  await s3i.login();
+  await authManager.getAccessToken();
 } on S3IException catch (e) {
  debugPrint("Auth failed: " + e.toString());
 }
 ````
 
-If the `S3ICore`-Instance is ready to use you can now receive and update information from the S3I-Services. 
+### Use the S3I-Directory
 
-### Get data from the directory
+If you want to access the S3I-Directory, use the previous constructed `AuthenticationManager`-Instance to create a `S3ICore`-Instance.
+```dart
+final s3i = S3ICore(authManager);
+```
+
+If the `S3ICore`-Instance is ready to use you can now receive and update information from the S3I-Directory (This is subject of
+a change in the next releases pls. consider this in your structure). 
+
+#### Get data from the directory
 
 To get data about a specific thing you can simply call `getThing()` on your `S3ICore`-Instance. 
 If you don't need the whole thing it's recommended to use a `FieldQuery` so you only receive a part of the entry 
@@ -105,7 +113,7 @@ try {
 
 TODO: add search example
 
-### Update data in the directory
+#### Update data in the directory
 
 To update data in the directory it's recommended to request the target before changing it. 
 This is not needed, because all data classes cloud be created without a version from the cloud but since this package doesn't support `PATCH` requests,
@@ -113,7 +121,7 @@ using only local data could lead  much more likely to unintentionally overwritin
 
 To update an entry in the directory simply use the `putThing()` or `putPolicy()` method with the locally modified object:
 ```dart
-policyEntry.insertObserver(PolicySubject("nginx:test_observer"));
+policyEntry.insertObserver(PolicySubject("nginx:new_test_observer"));
 try {
   await s3i.putPolicy(policyEntry);
 } on S3IException catch (e) {
@@ -121,27 +129,66 @@ try {
 }
 ```
 
-### Send and receive messages via S3I-Broker
+### Use the S3I-Broker
+
+In order to send and receive messages via S3I-Broker you need an implementation of a `BrokerInterface`.
+See [here](https://github.com/LukasPoque/s3i_flutter#Broker) for a list of implementations and some background information.
+
+#### Send messages
+
+TODO: ...
+
+#### Receive messages
 
 TODO: ...
 
 ## Project Structure
 
-TODO: s3i core / entry
+The package is divided in domain specific folders.
 
-### directory
+TODO: ...
 
-### auth
+### Auth
 
-The `auth` folder includes classes which are used to authenticate a user/client in the S3I.
+The `auth` folder includes classes which are used to authenticate an user/client in the S3I and could provide valid token to 
+the other parts of this package where they are used. The folder includes classes for `AccessToken` and `RefreshToken` too.
 
-The `S3ICore` needs a valid instance of a `AuthenticationManager` to work.
+Currently only the following `AuthenticationManager` implementations are available: 
+- `OAuthProxyFlow`: This implementation uses the S3I-OAuthProxy to obtain an access and refresh token.
+  But it doesn't refreshes the tokens automatically, only only if `getAccessToken` is called and the previous token is expired.
 
-Currently there is only one implementation available: `OAuthProxyFlow`.
-This implementation of the `AuthenticationManager` uses the S3I-OAuthProxy to obtain an access and refresh token.
-But it doesn't refreshes the tokens automatically, only only if `getAccessToken` is called and the `accessToken` is expired.
+### Broker
 
-### policy
+The `broker` folder includes data classes for the different messages specified in the S3I-B-Protocol and different implementations
+of the `BrokerInterface` for communication with the S3I-Broker.
+
+There are two different approaches to receive messages from the Broker. An `ActiveBrokerInterface` is for interfaces that inform you 
+whenever a new message is available. A `PassiveBrokerInterface` is for interfaces where you need to explicitly ask if there are new 
+messages.
+
+At the moment, there are only active broker interfaces implemented:
+- `BrokerAmqpConnector`: uses the native communication protocol of the S3i-Broker: AMQP. This is not available for the *web* platform.
+- `BrokerRestConnector`: uses the S3I-Broker REST API for sending/receiving of messages.
+
+Currently the following message types are supported:
+- `UserMessage`: used for communication between two real users.
+- `ServiceMessage`: used to invoke service functions or receive service answers from S3I-Services.
+- `GetValueMessage`: used to get a specific value from an other thing.
+
+### Directory
+
+The `directory` folder includes data classes to store and manipulate the entries of a thing from the directory.
+
+The classes are following the *S3I-Directory-Data-Model* with the `Thing` class as their root followed by different chains of 
+`DirObject`, `Link` and `Value`.
+
+### Exceptions
+
+The `exceptions` folder includes all customized exceptions from this package.
+
+The base class is the `S3IException` which only wraps a normal `Exception` making it easier to catch all specific S3I exceptions.
+
+### Policy
 
 The `policy` folder includes data classes to store and manipulate the policy entries of a thing from the directory OR repository.
 
@@ -153,10 +200,16 @@ In the S3I-Concept there are two special `PolicyGroup`s which have a specific me
 - owner: An owner has READ and WRITE permission to everything (thing:/, policy:/, message:/)
 - observer: An observer has only READ permission to the thing part (thing:/)
 
-### broker
+### Query
 
-### exceptions
+The `query` folder includes the parameters for a (query)request to the S3I-Directory/Repository and the S3I-EventSystem.
 
-### query
+Currently the following parameters are used:
+- `FieldQuery`: Only the selected fields will be included in the returned json, good for faster and smaller responses.
+- `NamespaceQuery`: Limit the query to things in the given namespaces only.
+- `OptionQuery`: Used for sorting the responses or enable paging/cursor mechanisms.
+- `RQLQuery`: A lightweight query language for the use in URLs (this could be separated to an external package in the future).
 
-### utils
+### Utils
+
+The `utils` folder includes useful tools for the whole package. Currently it contains constant json-keys from the S3I-Services.
