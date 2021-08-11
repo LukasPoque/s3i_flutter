@@ -7,6 +7,28 @@ import 'package:s3i_flutter/src/auth/tokens.dart';
 import 'package:s3i_flutter/src/broker/broker_interfaces.dart';
 import 'package:s3i_flutter/src/broker/message.dart';
 
+///Creates a new [BrokerRestConnector].
+///
+/// The instance is created with the [authManager] and the optional constructor
+/// arguments in the [args] (the string-keys should match the name of the
+/// parameters).
+///
+/// This is needed to use the same interface on web and other platforms.
+ActiveBrokerInterface getBrokerDefaultConnector(
+    AuthenticationManager authManager,
+    {Map<String, dynamic> args = const <String, dynamic>{}}) {
+  final String brokerBaseUrl =
+      args['brokerBaseUrl'] as String? ?? 'https://broker.s3i.vswf.dev/';
+  final int maxMessagesPerInterval =
+      args['maxMessagesPerInterval'] as int? ?? 10;
+  final Duration pollingInterval =
+      args['pollingInterval'] as Duration? ?? const Duration(seconds: 1);
+  return BrokerRestConnector(authManager,
+      brokerBaseUrl: brokerBaseUrl,
+      maxMessagesPerInterval: maxMessagesPerInterval,
+      pollingInterval: pollingInterval);
+}
+
 /// This [ActiveBrokerInterface] implementation uses the S3I-Broker REST API
 /// to send and receive messages.
 ///
