@@ -63,7 +63,7 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// Returns an empty string if everything is ready or the error occurred
   /// during the connection as string.
   Future<String> connectToBroker() async {
-    if(_keepAlive || _endpointConsumer.isNotEmpty) return 'already connected';
+    if (_keepAlive || _endpointConsumer.isNotEmpty) return 'already connected';
     _keepAlive = true;
     return _establishConnectionToBroker()
         .then((_) => '')
@@ -90,14 +90,14 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   @override
   void sendMessage(Message message, Set<String> endpoints) {
     if (_amqpClient == null || _channel == null || _exchange == null) {
-      notifySendMessageFailed(message, 'no valid broker connection');
+      notifySendMessageFailed(message, S3IException('invalid broker state'));
     } else {
       for (final String edp in endpoints) {
         try {
           _exchange!.publish(jsonEncode(message.toJson()), edp);
           notifySendMessageSucceeded(message);
         } on ChannelException catch (e) {
-          notifySendMessageFailed(message, e.errorType.toString());
+          notifySendMessageFailed(message, e);
         }
       }
     }
@@ -113,10 +113,10 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   @override
   void startConsuming(String endpoint) {
     if (_amqpClient == null || _channel == null || _exchange == null) {
-      notifyConsumingFailed(endpoint, 'no valid broker connection');
+      notifyConsumingFailed(endpoint, S3IException('invalid broker state'));
     } else {
       _connectToEndpoint(endpoint).catchError((Object e) {
-        notifyConsumingFailed(endpoint, e.toString());
+        notifyConsumingFailed(endpoint, S3IException(e.toString()));
       });
     }
   }
