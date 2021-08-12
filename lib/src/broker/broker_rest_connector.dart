@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
-import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
 import 'package:s3i_flutter/src/auth/tokens.dart';
 import 'package:s3i_flutter/src/broker/broker_interfaces.dart';
 import 'package:s3i_flutter/src/broker/message.dart';
+import 'package:s3i_flutter/src/exceptions/network_response_exception.dart';
+import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
 
 ///Creates a new [BrokerRestConnector].
 ///
@@ -14,7 +15,7 @@ import 'package:s3i_flutter/src/broker/message.dart';
 /// parameters).
 ///
 /// This is needed to use the same interface on web and other platforms.
-ActiveBrokerInterface getBrokerDefaultConnector(
+ActiveBrokerInterface getActiveBrokerDefaultConnector(
     AuthenticationManager authManager,
     {Map<String, dynamic> args = const <String, dynamic>{}}) {
   final String brokerBaseUrl =

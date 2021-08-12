@@ -15,7 +15,7 @@ import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
 /// parameters).
 ///
 /// This is needed to use the same interface on web and other platforms.
-ActiveBrokerInterface getBrokerDefaultConnector(
+ActiveBrokerInterface getActiveBrokerDefaultConnector(
     AuthenticationManager authManager,
     {Map<String, dynamic> args = const <String, dynamic>{}}) {
   final String brokerHost =
