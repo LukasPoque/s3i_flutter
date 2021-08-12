@@ -36,6 +36,10 @@ If you are not familiar with the S³I concepts, please read the
 
 For further information see the [KWH Glossar](https://www.kwh40.de/glossar/) and the other [Standpunkte](https://www.kwh40.de/veroffentlichungen/).
 
+## Contributing
+
+PRs are always welcome, check [CONTRIBUTING.md](https://github.com/LukasPoque/s3i_flutter/blob/master/CONTRIBUTING.md) for more info.
+
 ## Installing
 
 Please see [pub.dev](https://pub.dev/packages/s3i_flutter/install) for instructions how to install this package to your flutter app. 
