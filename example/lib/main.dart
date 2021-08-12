@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+// used to determine if the app is running on the web
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 //TODO: replace with your own client data
@@ -50,9 +52,9 @@ class MyHomePage extends StatefulWidget {
 
   /// pass extra information to the REST connector (if we are running on web)
   static final ActiveBrokerInterface brokerConnector = kIsWeb
-      ? getBrokerDefaultConnector(authManager,
+      ? getActiveBrokerDefaultConnector(authManager,
           args: {'pollingInterval': const Duration(milliseconds: 500)})
-      : getBrokerDefaultConnector(authManager)
+      : getActiveBrokerDefaultConnector(authManager)
     // subscribe to events of the active broker interface
     ..subscribeConsumingFailed((endpoint, error) {
       print('Error on connection $endpoint: $error');
@@ -310,6 +312,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     thingIdInputController.dispose();
+    // Unsubscribe to our own queue, disconnect from the broker
+    // this is not necessary
+    MyHomePage.brokerConnector.stopConsuming(ownEndpoint);
     super.dispose();
   }
 }
