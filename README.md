@@ -133,14 +133,69 @@ try {
 
 In order to send and receive messages via S3I-Broker you need an implementation of a `BrokerInterface`.
 See [here](https://github.com/LukasPoque/s3i_flutter#Broker) for a list of implementations and some background information.
+In this example we use an `ActiveBrokerInterface`, because it notifies us if new messages are available. If you are targeting web as a platform too,
+use the `getActiveBrokerDefaultConnector` function. This function returns either an AMQPConnector (if your app is not running as web-app) or a 
+RESTConnector. You can pass the different constructor arguments via the args-map.
+```dart
+// used to determine if the app is running on the web
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-#### Send messages
+static final ActiveBrokerInterface brokerConnector = kIsWeb
+      ? getActiveBrokerDefaultConnector(authManager,
+          args: {'pollingInterval': const Duration(milliseconds: 500)})
+      : getActiveBrokerDefaultConnector(authManager);
+```
 
-TODO: ...
+Now you can register for different events of the brokerConnector. You can even register multiple times for the same event. This is useful
+if you want to use the information at different locations in the app (e.g. logging, ui, etc.).
+```dart
+brokerConnector
+    ..subscribeConsumingFailed((String endpoint, Exception error) {
+      print('Error on connection $endpoint: $error');
+    })
+    ..subscribeSendMessageFailed((Message msg, Exception error) {
+      print('Error while sending message (${msg.identifier}) $error');
+    })
+    ..subscribeSendMessageSucceeded((Message msg) {
+      print('Message with id ${msg.identifier} sent');
+    })
+```
 
 #### Receive messages
 
-TODO: ...
+To receive messages and working with them in your app it's a good idea to register callback for the receiving functions of the brokerConnector.
+In this example we're only interested in `ServiceReply`s:
+```dart
+brokerConnector.subscribeServiceReplyReceived((ServiceReply msg) {
+    print('Message with id ${msg.identifier} received');
+});
+```
+
+If all callback you're interested in are registered it's time to start consuming on one (or multiple) queues on the S3I-Broker. 
+For that simply call `startConsuming`. If you don't want any open connections left when your app closes, call `stopConsuming` with the same endpoint
+in your dispose method.
+```dart
+final String ownEndpoint = '<YOUR ENDPOINT ID>';
+brokerConnector.startConsuming(ownEndpoint);
+//...
+// dispose() or equivalent method
+brokerConnector.stopConsuming(ownEndpoint);
+```
+
+#### Send messages
+
+To send messages to other things you need to construct a message first. Then you can simply call `sendMessage` with the message and all receiver 
+endpoints on your broker instance. 
+```dart
+static final request = ServiceRequest(
+      receivers: <String>{'<SERVICE ID>'},
+      sender: '<YOUR CLIENT ID>',
+      replyToEndpoint: '<YOUR ENDPOINT ID>',
+      serviceType: '<FML40 SERVICE TYPE>',
+      parameters: <String, dynamic>{<NEEDED PARAMETERS MAP>});
+
+brokerConnector.sendMessage(requestMsg, <String>{'<SERVICE ENDPOINT>'});
+```
 
 ## Project Structure
 
