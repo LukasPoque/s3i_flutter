@@ -1,3 +1,13 @@
+## 0.4.0
+
+Add S3I-Broker functionality:
+- S3I-B-Messages classes (Message, UserMessage, ServiceMessage (ServiceRequest, ServiceReply), AttributeValueMessage (GetValueRequest, GetValueReply))
+- Basic interfaces for the Broker communication (BrokerInterface, ActiveBrokerInterface, PassiveBrokerInterface):
+  - ActiveBrokerInterface for interfaces that inform you whenever a new message is available
+  - PassiveBrokerInterface for interfaces where you need to explicitly ask if there are new messages
+- An implementation of the ActiveBrokerInterface using the AMQP protocol (not usable for web)
+- An implementation of the ActiveBrokerInterface using the REST API of the broker
+
 ## 0.3.0
 
 Add linting rules and fulfill them.

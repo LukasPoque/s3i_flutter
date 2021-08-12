@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// used to determine if the app is running on the web
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 //TODO: replace with your own client data
 // the client used here has no permissions in the s3i unless your personal
 // account grants some
-final clientIdentity = ClientIdentity("s3i-flutter-example-client",
-    secret: "a3d4752b-396d-4bc8-a337-e54fb2c1706d");
+final clientIdentity = ClientIdentity("s3i:flutter-example-client",
+    secret: "86c0025d-3cb4-4db8-a8d3-4bf30e2e0930");
+final String ownEndpoint = 's3ib://s3i:cb420dbc-0d0f-4c57-8cf6-12bdf96b8578';
 
 void main() {
   runApp(MyApp());
@@ -46,6 +50,37 @@ class MyHomePage extends StatefulWidget {
         : throw "Could not open the login page" + url.toString();
   };
 
+  /// pass extra information to the REST connector (if we are running on web)
+  static final ActiveBrokerInterface brokerConnector = kIsWeb
+      ? getActiveBrokerDefaultConnector(authManager,
+          args: {'pollingInterval': const Duration(milliseconds: 500)})
+      : getActiveBrokerDefaultConnector(authManager)
+    // subscribe to events of the active broker interface
+    ..subscribeConsumingFailed((endpoint, error) {
+      print('Error on connection $endpoint: $error');
+    })
+    ..subscribeSendMessageFailed((msg, error) {
+      print('Error while sending message (${msg.identifier}) $error');
+    })
+    ..subscribeSendMessageSucceeded((msg) {
+      print('Message with id ${msg.identifier} sent');
+    })
+    ..subscribeServiceReplyReceived((msg) {
+      print('Message with id ${msg.identifier} received');
+    });
+
+  //id of the vSFL passability service (could be offline)
+  static final String serviceId = 's3i:aae1178b-0499-47bf-a7c6-58fa92102e1a';
+  static final String serviceEndpoint = 's3ib://$serviceId';
+
+  //create new service request
+  static final request = ServiceRequest(
+      receivers: <String>{serviceId},
+      sender: clientIdentity.id,
+      replyToEndpoint: ownEndpoint,
+      serviceType: 'fml40::ProvidesPassabilityInformation/calculatePassability',
+      parameters: <String, String>{'load': '40', 'moisture': '60'});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -58,6 +93,16 @@ class _MyHomePageState extends State<MyHomePage> {
   AccessToken? accessToken;
   Thing? requestedThing;
   PolicyEntry? requestedPolicy;
+  ServiceReply? lastReply;
+
+  _MyHomePageState() {
+    //connect to service reply a second time to setState
+    MyHomePage.brokerConnector.subscribeServiceReplyReceived((msg) {
+      setState(() {
+        lastReply = msg;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+          child: ListView(
             children: <Widget>[
               _buildAuthArea(),
               Divider(height: 5, thickness: 5),
@@ -75,7 +119,9 @@ class _MyHomePageState extends State<MyHomePage> {
               Divider(height: 5, thickness: 5),
               _buildEditThingArea(),
               Divider(height: 5, thickness: 5),
-              _buildPolicyRequestArea()
+              _buildPolicyRequestArea(),
+              Divider(height: 5, thickness: 5),
+              _buildBrokerArea(),
             ],
           ),
         ));
@@ -107,8 +153,9 @@ class _MyHomePageState extends State<MyHomePage> {
           SizedBox(height: 16),
           SelectableText(accessToken != null ? accessToken!.originalToken : ""),
           SizedBox(height: 8),
-          SelectableText(
-              accessToken != null ? accessToken!.decodedPayload.toString() : ""),
+          SelectableText(accessToken != null
+              ? accessToken!.decodedPayload.toString()
+              : ""),
         ],
       ),
     );
@@ -221,9 +268,53 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget _buildBrokerArea() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          ElevatedButton(
+            onPressed: () async {
+              // subscribe to our own queue
+              MyHomePage.brokerConnector.startConsuming(ownEndpoint);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text('Start consuming own endpoint'),
+            ),
+          ),
+          SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: () async {
+              // Unsubscribe to our own queue
+              MyHomePage.brokerConnector.stopConsuming(ownEndpoint);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text('Stop consuming own endpoint'),
+            ),
+          ),
+          SizedBox(width: 8),
+          OutlinedButton(
+              onPressed: () async {
+                //send service request
+                MyHomePage.brokerConnector.sendMessage(
+                    MyHomePage.request, <String>{MyHomePage.serviceEndpoint});
+              },
+              child: Text("Send Service-Request to Passability-Service")),
+          SizedBox(height: 8),
+          if (lastReply != null) Text(lastReply!.toJson().toString()),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     thingIdInputController.dispose();
+    // Unsubscribe to our own queue, disconnect from the broker
+    // this is not necessary
+    MyHomePage.brokerConnector.stopConsuming(ownEndpoint);
     super.dispose();
   }
 }

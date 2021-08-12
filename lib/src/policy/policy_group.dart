@@ -3,7 +3,7 @@ import 'package:s3i_flutter/src/json_serializable_object.dart';
 import 'package:s3i_flutter/src/policy/policy_entry.dart';
 import 'package:s3i_flutter/src/policy/policy_resource.dart';
 import 'package:s3i_flutter/src/policy/policy_subject.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// A specific *Group* in a policy entry.
 ///
@@ -28,17 +28,17 @@ class PolicyGroup implements JsonSerializableObject {
   factory PolicyGroup.fromJson(String name, Map<String, dynamic> json) {
     final PolicyGroup pG = PolicyGroup(name);
     try {
-      if (json.containsKey(JsonKey.subjects)) {
+      if (json.containsKey(DittoKeys.subjects)) {
         final Map<String, dynamic> sub =
-            json[JsonKey.subjects] as Map<String, dynamic>;
+            json[DittoKeys.subjects] as Map<String, dynamic>;
         for (final String k in sub.keys) {
           pG.subjects[k] =
               PolicySubject.fromJson(k, sub[k] as Map<String, dynamic>);
         }
       }
-      if (json.containsKey(JsonKey.resources)) {
+      if (json.containsKey(DittoKeys.resources)) {
         final Map<String, dynamic> res =
-            json[JsonKey.resources] as Map<String, dynamic>;
+            json[DittoKeys.resources] as Map<String, dynamic>;
         for (final String k in res.keys) {
           pG.resources[k] =
               PolicyResource.fromJson(k, res[k] as Map<String, dynamic>);
@@ -83,13 +83,13 @@ class PolicyGroup implements JsonSerializableObject {
       final Map<String, dynamic> sub = subjects.map<String, dynamic>(
           (String key, PolicySubject value) =>
               MapEntry<String, dynamic>(key, value.toJson()));
-      newJson[JsonKey.subjects] = sub;
+      newJson[DittoKeys.subjects] = sub;
     }
     if (resources.isNotEmpty) {
       final Map<String, dynamic> res = resources.map<String, dynamic>(
           (String key, PolicyResource value) =>
               MapEntry<String, dynamic>(key, value.toJson()));
-      newJson[JsonKey.resources] = res;
+      newJson[DittoKeys.resources] = res;
     }
     return newJson;
   }

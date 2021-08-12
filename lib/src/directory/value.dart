@@ -1,6 +1,6 @@
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/json_serializable_object.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 // TODO(poq): add S3I::Endpoints as attribute
 
@@ -15,12 +15,13 @@ class Value implements JsonSerializableObject {
   /// could not be found in the json. Throws a [TypeError] if the values
   /// couldn't be parsed as string or List<String>.
   factory Value.fromJson(Map<String, dynamic> json) {
-    final String attribute = json.containsKey(JsonKey.attribute)
-        ? json[JsonKey.attribute] as String
-        : throw JsonMissingKeyException(JsonKey.attribute, json.toString());
+    final String attribute = json.containsKey(DirectoryKeys.attribute)
+        ? json[DirectoryKeys.attribute] as String
+        : throw JsonMissingKeyException(
+            DirectoryKeys.attribute, json.toString());
     final Value v = Value(attribute)
-      ..value = json.containsKey(JsonKey.value)
-          ? _createValueList(json[JsonKey.value] as List<dynamic>)
+      ..value = json.containsKey(DirectoryKeys.value)
+          ? _createValueList(json[DirectoryKeys.value] as List<dynamic>)
           : null;
     return v;
   }
@@ -47,8 +48,8 @@ class Value implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[JsonKey.attribute] = attribute;
-    if (value != null) newJson[JsonKey.value] = value;
+    newJson[DirectoryKeys.attribute] = attribute;
+    if (value != null) newJson[DirectoryKeys.value] = value;
     return newJson;
   }
 }

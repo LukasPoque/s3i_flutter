@@ -1,3 +1,7 @@
+// TODO(poq): maybe a global error code is nicer because developers could use
+//  them to map to their custom messages, store a static map<ErrorCode,Message>
+//  somewhere to use it here in toString
+
 /// Base class for all Exceptions in the s3i_flutter package.
 class S3IException implements Exception {
   /// Creates a [S3IException] with [errorMessage].

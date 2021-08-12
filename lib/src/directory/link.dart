@@ -1,7 +1,7 @@
 import 'package:s3i_flutter/src/directory/dir_object.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/json_serializable_object.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 // TODO(poq): add S3I::TargetThing
 
@@ -16,12 +16,14 @@ class Link implements JsonSerializableObject {
   /// could not be found in the json. Throws a [TypeError] if the target
   /// couldn't be parsed correctly.
   factory Link.fromJson(Map<String, dynamic> json) {
-    final String association = json.containsKey(JsonKey.association)
-        ? json[JsonKey.association] as String
-        : throw JsonMissingKeyException(JsonKey.association, json.toString());
+    final String association = json.containsKey(DirectoryKeys.association)
+        ? json[DirectoryKeys.association] as String
+        : throw JsonMissingKeyException(
+            DirectoryKeys.association, json.toString());
     final Link l = Link(association)
-      ..target = json.containsKey(JsonKey.target)
-          ? DirObject.fromJson(json[JsonKey.target] as Map<String, dynamic>)
+      ..target = json.containsKey(DirectoryKeys.target)
+          ? DirObject.fromJson(
+              json[DirectoryKeys.target] as Map<String, dynamic>)
           : null;
     return l;
   }
@@ -42,8 +44,8 @@ class Link implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[JsonKey.association] = association;
-    if (target != null) newJson[JsonKey.target] = target!.toJson();
+    newJson[DirectoryKeys.association] = association;
+    if (target != null) newJson[DirectoryKeys.target] = target!.toJson();
     return newJson;
   }
 }

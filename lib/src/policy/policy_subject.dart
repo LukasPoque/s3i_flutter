@@ -1,6 +1,6 @@
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/json_serializable_object.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// The *Subject* of a ditto policy group.
 ///
@@ -23,10 +23,10 @@ class PolicySubject implements JsonSerializableObject {
   factory PolicySubject.fromJson(String id, Map<String, dynamic> json) {
     final PolicySubject pS = PolicySubject(id);
     try {
-      if (json.containsKey(JsonKey.expiry)) {
-        pS.expiringTimestamp = DateTime.parse(json[JsonKey.expiry] as String);
+      if (json.containsKey(DittoKeys.expiry)) {
+        pS.expiringTimestamp = DateTime.parse(json[DittoKeys.expiry] as String);
       }
-      pS.type = json[JsonKey.type] as String;
+      pS.type = json[DittoKeys.type] as String;
     } on FormatException catch (e) {
       //datetime parsing failed
       throw InvalidJsonSchemaException(e.message, json.toString());
@@ -65,8 +65,8 @@ class PolicySubject implements JsonSerializableObject {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
     if (expiringTimestamp != null)
-      newJson[JsonKey.expiry] = expiringTimestamp!.toIso8601String();
-    if (type != null) newJson[JsonKey.type] = type;
+      newJson[DittoKeys.expiry] = expiringTimestamp!.toIso8601String();
+    if (type != null) newJson[DittoKeys.type] = type;
     return newJson;
   }
 

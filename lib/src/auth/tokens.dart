@@ -85,6 +85,11 @@ abstract class JsonWebToken {
   /// if the expiration date could not be found.
   DateTime getExpirationDate();
 
+  /// Returns the duration from now until the token expires.
+  Duration timeTillExpiration() {
+    return getExpirationDate().difference(DateTime.now());
+  }
+
   @override
   String toString() {
     return 'JsonWebToken($originalToken)';
@@ -185,7 +190,7 @@ class RefreshToken extends JsonWebToken {
 
   @override
   DateTime getExpirationDate() {
-    if (decodedPayload[_payloadKeyType] != _payloadValueRefresh) {
+    if (decodedPayload[_payloadKeyType] == _payloadValueRefresh) {
       //refresh token
       try {
         final int secSinceEpoch = decodedPayload[_payloadKeyExpire] as int;

@@ -4,7 +4,7 @@ import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/policy/policy_group.dart';
 import 'package:s3i_flutter/src/policy/policy_resource.dart';
 import 'package:s3i_flutter/src/policy/policy_subject.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// A specific *Policy* for one [Entry] in the directory or repository.
 ///
@@ -35,14 +35,14 @@ class PolicyEntry extends Entry {
   factory PolicyEntry.fromJson(Map<String, dynamic> map) {
     if (map.isEmpty) throw const FormatException('empty map');
     try {
-      final String pId = map.containsKey(JsonKey.policyId)
-          ? map[JsonKey.policyId] as String
-          : throw JsonMissingKeyException(JsonKey.policyId, map.toString());
+      final String pId = map.containsKey(DittoKeys.policyId)
+          ? map[DittoKeys.policyId] as String
+          : throw JsonMissingKeyException(DittoKeys.policyId, map.toString());
       final PolicyEntry pE = PolicyEntry(pId);
       try {
-        if (map.containsKey(JsonKey.entries)) {
+        if (map.containsKey(DittoKeys.entries)) {
           final Map<String, dynamic> gro =
-              map[JsonKey.entries] as Map<String, dynamic>;
+              map[DittoKeys.entries] as Map<String, dynamic>;
           for (final String k in gro.keys) {
             pE._groups[k] =
                 PolicyGroup.fromJson(k, gro[k] as Map<String, dynamic>);
@@ -76,12 +76,12 @@ class PolicyEntry extends Entry {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[JsonKey.policyId] = id;
+    newJson[DittoKeys.policyId] = id;
     if (_groups.isNotEmpty) {
       final Map<String, dynamic> gro = _groups.map<String, dynamic>(
           (String key, PolicyGroup value) =>
               MapEntry<String, dynamic>(key, value.toJson()));
-      newJson[JsonKey.entries] = gro;
+      newJson[DittoKeys.entries] = gro;
     }
     return newJson;
   }

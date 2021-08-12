@@ -2,7 +2,7 @@ import 'package:s3i_flutter/src/directory/link.dart';
 import 'package:s3i_flutter/src/directory/value.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/json_serializable_object.dart';
-import 'package:s3i_flutter/src/utils/json_key.dart';
+import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 // TODO(poq): add S3I::Endpoints and S3I::Services
 
@@ -17,16 +17,17 @@ class DirObject implements JsonSerializableObject {
   /// required keys) could not be found in the json. Throws a [TypeError]
   /// if the values couldn't be parsed as expected.
   factory DirObject.fromJson(Map<String, dynamic> json) {
-    final String classString = json.containsKey(JsonKey.classString)
-        ? json[JsonKey.classString] as String
-        : throw JsonMissingKeyException(JsonKey.classString, json.toString());
+    final String classString = json.containsKey(DirectoryKeys.classString)
+        ? json[DirectoryKeys.classString] as String
+        : throw JsonMissingKeyException(
+            DirectoryKeys.classString, json.toString());
     final DirObject o = DirObject(classString)
-      ..identifier = json[JsonKey.identifier] as String?
-      ..links = json.containsKey(JsonKey.links)
-          ? _createLinkList(json[JsonKey.links] as List<dynamic>)
+      ..identifier = json[DirectoryKeys.identifier] as String?
+      ..links = json.containsKey(DirectoryKeys.links)
+          ? _createLinkList(json[DirectoryKeys.links] as List<dynamic>)
           : null
-      ..values = json.containsKey(JsonKey.values)
-          ? _createValueList(json[JsonKey.values] as List<dynamic>)
+      ..values = json.containsKey(DirectoryKeys.values)
+          ? _createValueList(json[DirectoryKeys.values] as List<dynamic>)
           : null;
     return o;
   }
@@ -74,10 +75,10 @@ class DirObject implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    newJson[JsonKey.classString] = classString;
-    if (identifier != null) newJson[JsonKey.identifier] = identifier;
-    if (links != null) newJson[JsonKey.links] = links;
-    if (values != null) newJson[JsonKey.values] = values;
+    newJson[DirectoryKeys.classString] = classString;
+    if (identifier != null) newJson[DirectoryKeys.identifier] = identifier;
+    if (links != null) newJson[DirectoryKeys.links] = links;
+    if (values != null) newJson[DirectoryKeys.values] = values;
     return newJson;
   }
 }
