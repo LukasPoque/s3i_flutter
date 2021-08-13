@@ -114,7 +114,7 @@ class S3ICore {
       ..addAll(<String, String>{'Authorization': 'Bearer $originalToken'})
       ..addAll(additionalHeaderFields);
     return _directoryClient.put(Uri.parse(directoryUrl + path),
-        headers: headers, body: jsonEncode(jsonBody));
+        headers: headers, body: utf8.encode(jsonEncode(jsonBody)));
   }
 
   /// Requests a directory thing entry (matching the [thingId]) from the
@@ -142,7 +142,8 @@ class S3ICore {
         assembleQuery('/things/$thingId', fieldQuery: fields));
     if (response.statusCode != 200) throw NetworkResponseException(response);
     try {
-      return Thing.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      return Thing.fromJson(
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
     } on InvalidJsonSchemaException catch (e) {
       throw ResponseParsingException(e);
     }
@@ -176,7 +177,7 @@ class S3ICore {
     if (response.statusCode != 200) throw NetworkResponseException(response);
     try {
       return PolicyEntry.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>);
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
     } on FormatException catch (e) {
       throw ResponseParsingException(e);
     } on InvalidJsonSchemaException catch (e) {

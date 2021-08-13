@@ -2,11 +2,8 @@
 
 Basic app to demonstrate and test the functionality of the [S3I Flutter package](https://github.com/LukasPoque/s3i_flutter).
 
-### Preparation
-
-Please start this application on port `5123` (use `--web-port=5123` as parameter on start) when you use flutter web. This avoids CORS errors during the use of the OAuthProxyFlow.
-
 ### Your Application
 
-For the login in your own application you should use a client which is specific for your app. Please contact the [KWH4.0](https://www.kwh40.de/kontakt/) to get one. 
+For the login in your own application you should use a client which is specific for your app. Please contact the 
+[KWH4.0](https://www.kwh40.de/kontakt/) to get one. 
 After that you can create your own `ClientIdentity("CLIENT_NAME", "CLIENT_SECRET")` with your specific data.

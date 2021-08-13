@@ -132,7 +132,7 @@ class BrokerRestConnector extends ActiveBrokerInterface {
           .get(Uri.parse(brokerBaseUrl + endpoint), headers: authHeader);
       if (response.statusCode != 200) throw NetworkResponseException(response);
       if (response.body.isEmpty) break; // no messages available
-      newMessageReceived(response.body);
+      newMessageReceived(utf8.decode(response.bodyBytes));
     }
   }
 
@@ -147,7 +147,7 @@ class BrokerRestConnector extends ActiveBrokerInterface {
       final Response response = await Client().post(
           Uri.parse(brokerBaseUrl + targetEndpoints.join(',')),
           headers: headers,
-          body: jsonEncode(message.toJson()));
+          body: utf8.encode(jsonEncode(message.toJson())));
       if (response.statusCode != 201) throw NetworkResponseException(response);
     } on Exception catch (e) {
       notifySendMessageFailed(message, e);
