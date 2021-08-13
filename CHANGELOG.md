@@ -1,3 +1,7 @@
+## 0.4.1
+
+Fix utf8 encoding problems.
+
 ## 0.4.0
 
 Add S3I-Broker functionality:
