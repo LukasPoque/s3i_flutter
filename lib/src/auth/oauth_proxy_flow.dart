@@ -59,7 +59,9 @@ class OAuthProxyFlow extends AuthenticationManager {
   Future<void> Function(Uri) openUrlCallback;
 
   /// Is invoked if the user is authenticated correctly.
-  VoidCallback? onAuthSuccess;
+  ///
+  /// Is called everytime the [_accessToken] is changed.
+  Function(AccessToken)? onAuthSuccess;
 
   // TODO(poq): enable storage and loading of refresh token
   // Is invoked if a new refresh token is available. Could be used to store
@@ -100,6 +102,7 @@ class OAuthProxyFlow extends AuthenticationManager {
           try {
             _parseAndSetTokenResponse(response.body);
             //_accessToken and _refreshToken should be valid if this is reached
+            if (onAuthSuccess != null) onAuthSuccess!(_accessToken!);
             return _accessToken!;
             // TODO(poq): test _accessToken.isNotExpired
           } catch (e) {
@@ -143,7 +146,7 @@ class OAuthProxyFlow extends AuthenticationManager {
             _parseAndSetTokenResponse(response.body);
             //_accessToken and _refreshToken should be
             // valid if this code is reached
-            if (onAuthSuccess != null) onAuthSuccess!();
+            if (onAuthSuccess != null) onAuthSuccess!(_accessToken!);
             return _accessToken!;
             // TODO(poq): test _accessToken.isNotExpired
           } catch (e) {
