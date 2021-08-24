@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
 import 'package:s3i_flutter/src/auth/client_identity.dart';
@@ -24,6 +23,7 @@ class OAuthProxyFlow extends AuthenticationManager {
   OAuthProxyFlow(ClientIdentity clientIdentity,
       {required this.openUrlCallback,
       this.onAuthSuccess,
+      this.onNewRefreshToken,
       this.maxRetryPickup = 100,
       this.retryWaitingTimeMilliSec = 200,
       List<String> scopes = const <String>[]})
@@ -63,11 +63,17 @@ class OAuthProxyFlow extends AuthenticationManager {
   /// Is called everytime the [_accessToken] is changed.
   Function(AccessToken)? onAuthSuccess;
 
-  // TODO(poq): enable storage and loading of refresh token
-  // Is invoked if a new refresh token is available. Could be used to store
-  // the token in an external database.
-  // Function(RefreshToken)? onNewRefreshToken;
-  // void setRefreshToken(RefreshToken token){}
+  /// Is invoked if a new refresh token is available. Could be used to store
+  /// the token in an external database.
+  Function(RefreshToken)? onNewRefreshToken;
+
+  /// Overwrites the current [_refreshToken]. Could be used to set an older
+  /// token from an external database. To receive new [RefreshToken]s see
+  /// the [onNewRefreshToken] callback.
+  // ignore: avoid_setters_without_getters
+  set refreshToken(RefreshToken token) {
+    _refreshToken = token;
+  }
 
   /// Returns a valid [AccessToken] for the [clientIdentity]
   /// which is at least valid for the time specified in [tokenValidBuffer].
@@ -102,6 +108,7 @@ class OAuthProxyFlow extends AuthenticationManager {
           try {
             _parseAndSetTokenResponse(response.body);
             //_accessToken and _refreshToken should be valid if this is reached
+            if (onNewRefreshToken != null) onNewRefreshToken!(_refreshToken!);
             if (onAuthSuccess != null) onAuthSuccess!(_accessToken!);
             return _accessToken!;
             // TODO(poq): test _accessToken.isNotExpired
@@ -146,6 +153,7 @@ class OAuthProxyFlow extends AuthenticationManager {
             _parseAndSetTokenResponse(response.body);
             //_accessToken and _refreshToken should be
             // valid if this code is reached
+            if (onNewRefreshToken != null) onNewRefreshToken!(_refreshToken!);
             if (onAuthSuccess != null) onAuthSuccess!(_accessToken!);
             return _accessToken!;
             // TODO(poq): test _accessToken.isNotExpired
@@ -170,9 +178,11 @@ class OAuthProxyFlow extends AuthenticationManager {
   }
 
   @override
-  Future<bool> logout() {
+  Future<bool> logout() async {
     // TODO(poq): implement logout
-    throw UnimplementedError();
+    //throw UnimplementedError();
+    _invalidateLoginState();
+    return true;
   }
 
   @override
