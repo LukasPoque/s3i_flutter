@@ -51,8 +51,9 @@ abstract class Message extends JsonSerializableObject {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
     newJson[BrokerKeys.identifier] = _identifier;
-    newJson[BrokerKeys.receivers] = receivers.toList();
     newJson[BrokerKeys.sender] = sender;
+    if (receivers.isNotEmpty)
+      newJson[BrokerKeys.receivers] = receivers.toList();
     if (replyingToMessage != null)
       newJson[BrokerKeys.replyingToMessage] = replyingToMessage;
     if (replyToEndpoint != null)
@@ -63,8 +64,7 @@ abstract class Message extends JsonSerializableObject {
   /// Fills this [Message] with the information stored in the [json].
   ///
   /// Throws a [JsonMissingKeyException] if there is missing one of the needed
-  /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender])
-  /// in the [json].
+  /// keys ([BrokerKeys.identifier],[BrokerKeys.sender]) in the [json].
   /// Throws a [InvalidJsonSchemaException] if some values
   /// doesn't match the expected value type.
   void generateFromJson(Map<String, dynamic> json) {
@@ -73,13 +73,12 @@ abstract class Message extends JsonSerializableObject {
           ? json[BrokerKeys.identifier] as String
           : throw JsonMissingKeyException(
               BrokerKeys.identifier, json.toString());
-      receivers = json.containsKey(BrokerKeys.receivers)
-          ? _createReceiversSet(json[BrokerKeys.receivers] as List<dynamic>)
-          : throw JsonMissingKeyException(
-              BrokerKeys.receivers, json.toString());
       sender = json.containsKey(BrokerKeys.sender)
           ? json[BrokerKeys.sender] as String
           : throw JsonMissingKeyException(BrokerKeys.sender, json.toString());
+      receivers = json.containsKey(BrokerKeys.receivers)
+          ? _createReceiversSet(json[BrokerKeys.receivers] as List<dynamic>)
+          : const <String>{};
       replyingToMessage = json[BrokerKeys.replyingToMessage] as String?;
       replyToEndpoint = json[BrokerKeys.replyToEndpoint] as String?;
     } on TypeError catch (e) {
