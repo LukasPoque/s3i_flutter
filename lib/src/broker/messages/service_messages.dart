@@ -1,4 +1,4 @@
-import 'package:s3i_flutter/src/broker/message.dart';
+import 'package:s3i_flutter/src/broker/messages/message.dart';
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/utils/json_keys.dart';

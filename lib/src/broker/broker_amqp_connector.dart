@@ -4,7 +4,7 @@ import 'package:dart_amqp/dart_amqp.dart';
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
 import 'package:s3i_flutter/src/auth/tokens.dart';
 import 'package:s3i_flutter/src/broker/broker_interfaces.dart';
-import 'package:s3i_flutter/src/broker/message.dart';
+import 'package:s3i_flutter/src/broker/messages/message.dart';
 import 'package:s3i_flutter/src/exceptions/network_authentication_exception.dart';
 import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
 

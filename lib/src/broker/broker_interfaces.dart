@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
 import 'package:s3i_flutter/src/broker/attribute_value_messages.dart';
-import 'package:s3i_flutter/src/broker/message.dart';
-import 'package:s3i_flutter/src/broker/service_messages.dart';
-import 'package:s3i_flutter/src/broker/user_message.dart';
+import 'package:s3i_flutter/src/broker/messages/message.dart';
+import 'package:s3i_flutter/src/broker/messages/service_messages.dart';
+import 'package:s3i_flutter/src/broker/messages/user_message.dart';
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/exceptions/parse_exception.dart';
