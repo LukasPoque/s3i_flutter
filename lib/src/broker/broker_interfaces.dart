@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
 import 'package:s3i_flutter/src/broker/messages/attribute_value_messages.dart';
+import 'package:s3i_flutter/src/broker/messages/event_system_messages.dart';
 import 'package:s3i_flutter/src/broker/messages/message.dart';
 import 'package:s3i_flutter/src/broker/messages/service_messages.dart';
 import 'package:s3i_flutter/src/broker/messages/user_message.dart';
@@ -52,6 +53,12 @@ abstract class BrokerInterface {
     switch (messageType) {
       case BrokerKeys.userMessage:
         return UserMessage.fromJson(json);
+      case BrokerKeys.customEventRequest:
+        return EventSubscriptionRequest.fromJson(json);
+      case BrokerKeys.customEventReply:
+        return EventSubscriptionResponse.fromJson(json);
+      case BrokerKeys.eventMessage:
+        return EventMessage.fromJson(json);
       case BrokerKeys.serviceRequest:
         return ServiceRequest.fromJson(json);
       case BrokerKeys.serviceReply:
@@ -97,6 +104,23 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
   final Set<Function(UserMessage)> _callbacksForUserMessage =
       <Function(UserMessage)>{};
 
+  /// All registered functions which are invoked if an [EventMessage] is
+  /// received.
+  final Set<Function(EventMessage)> _callbacksForEventMessage =
+      <Function(EventMessage)>{};
+
+  /// All registered functions which are invoked if an
+  /// [EventSubscriptionRequest] is received.
+  final Set<Function(EventSubscriptionRequest)>
+      _callbacksForEventSubscriptionRequest =
+      <Function(EventSubscriptionRequest)>{};
+
+  /// All registered functions which are invoked if an
+  /// [EventSubscriptionResponse] is received.
+  final Set<Function(EventSubscriptionResponse)>
+      _callbacksForEventSubscriptionResponse =
+      <Function(EventSubscriptionResponse)>{};
+
   /// All registered functions which are invoked if an [ServiceRequest] is
   /// received.
   final Set<Function(ServiceRequest)> _callbacksForServiceRequest =
@@ -124,7 +148,7 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
   /// The endpoints should be in the correct format (`s3ib://s3i:`+ UUIDv4
   /// for decrypted communication or `s3ibs://s3i:` + UUIDv4 for encrypted
   /// messages).
-  void startConsuming(String endpoint);
+  Future<void> startConsuming(String endpoint);
 
   /// Stops consuming on the endpoint.
   ///
@@ -149,6 +173,12 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
           BrokerInterface.transformJsonToMessage(decodedMessage);
       if (message is UserMessage) {
         _notifyUserMessageReceived(message);
+      } else if (message is EventMessage) {
+        _notifyEventMessageReceived(message);
+      } else if (message is EventSubscriptionRequest) {
+        _notifyEventSubscriptionRequestReceived(message);
+      } else if (message is EventSubscriptionResponse) {
+        _notifyEventSubscriptionResponseReceived(message);
       } else if (message is ServiceRequest) {
         _notifyServiceRequestReceived(message);
       } else if (message is ServiceReply) {
@@ -250,6 +280,52 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
     _callbacksForUserMessage.remove(callback);
   }
 
+  /// Subscribes to all received event messages (EventMessageReceived-Event).
+  void subscribeEventMessageReceived(Function(EventMessage) callback) {
+    _callbacksForEventMessage.add(callback);
+  }
+
+  /// Unsubscribes the callback from the EventMessageReceived-Event.
+  ///
+  /// The [callback] needs to be exactly the same as the one used while
+  /// subscribing.
+  void unsubscribeEventMessageReceived(Function(EventMessage) callback) {
+    _callbacksForEventMessage.remove(callback);
+  }
+
+  /// Subscribes to all received EventSubscriptionRequest
+  /// (EventSubscriptionRequestReceived-Event).
+  void subscribeEventSubscriptionRequestReceived(
+      Function(EventSubscriptionRequest) callback) {
+    _callbacksForEventSubscriptionRequest.add(callback);
+  }
+
+  /// Unsubscribes the callback from the EventSubscriptionRequestReceived-Event.
+  ///
+  /// The [callback] needs to be exactly the same as the one used while
+  /// subscribing.
+  void unsubscribeEventSubscriptionRequestReceived(
+      Function(EventSubscriptionRequest) callback) {
+    _callbacksForEventSubscriptionRequest.remove(callback);
+  }
+
+  /// Subscribes to all received EventSubscriptionResponse
+  /// (EventSubscriptionResponseReceived-Event).
+  void subscribeEventSubscriptionResponse(
+      Function(EventSubscriptionResponse) callback) {
+    _callbacksForEventSubscriptionResponse.add(callback);
+  }
+
+  /// Unsubscribes the callback from the
+  /// EventSubscriptionResponseReceived-Event.
+  ///
+  /// The [callback] needs to be exactly the same as the one used while
+  /// subscribing.
+  void unsubscribeEventSubscriptionResponseReceived(
+      Function(EventSubscriptionResponse) callback) {
+    _callbacksForEventSubscriptionResponse.remove(callback);
+  }
+
   /// Subscribes to all ServiceRequestReceived-Events.
   void subscribeServiceRequestReceived(Function(ServiceRequest) callback) {
     _callbacksForServiceRequest.add(callback);
@@ -334,6 +410,28 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
 
   void _notifyUserMessageReceived(UserMessage message) {
     for (final Function(UserMessage) callback in _callbacksForUserMessage) {
+      callback(message);
+    }
+  }
+
+  void _notifyEventMessageReceived(EventMessage message) {
+    for (final Function(EventMessage) callback in _callbacksForEventMessage) {
+      callback(message);
+    }
+  }
+
+  void _notifyEventSubscriptionRequestReceived(
+      EventSubscriptionRequest message) {
+    for (final Function(EventSubscriptionRequest) callback
+        in _callbacksForEventSubscriptionRequest) {
+      callback(message);
+    }
+  }
+
+  void _notifyEventSubscriptionResponseReceived(
+      EventSubscriptionResponse message) {
+    for (final Function(EventSubscriptionResponse) callback
+        in _callbacksForEventSubscriptionResponse) {
       callback(message);
     }
   }

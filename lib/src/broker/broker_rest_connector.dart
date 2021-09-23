@@ -72,7 +72,7 @@ class BrokerRestConnector extends ActiveBrokerInterface {
   }
 
   @override
-  void startConsuming(String endpoint) {
+  Future<void> startConsuming(String endpoint) async {
     _endpoints.add(endpoint);
     if (!_enablePolling) _startPolling();
   }

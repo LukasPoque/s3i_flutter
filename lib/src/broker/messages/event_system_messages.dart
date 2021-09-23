@@ -8,13 +8,13 @@ import 'package:s3i_flutter/src/utils/json_keys.dart';
 /// This is used for the S3I-Event-System, see
 /// https://github.com/LukasPoque/s3i_flutter/issues/9#issuecomment-925665563
 /// for the current draft.
-class SubscriptionRequest extends Message {
-  /// Creates a [SubscriptionRequest] with a newly generated UUIDv4 if
+class EventSubscriptionRequest extends Message {
+  /// Creates a [EventSubscriptionRequest] with a newly generated UUIDv4 if
   /// [messageId] is not set.
   ///
   /// Creates empty defaults for [receivers], [sender], [filter]
   /// and [attributePaths].
-  SubscriptionRequest(
+  EventSubscriptionRequest(
       {String? messageId,
       Set<String> receivers = const <String>{},
       String sender = '',
@@ -29,7 +29,7 @@ class SubscriptionRequest extends Message {
             replyingToMessage: replyingToMessage,
             replyToEndpoint: replyToEndpoint);
 
-  /// Creates a [SubscriptionRequest] with the information stored in the [json].
+  /// Creates a [EventSubscriptionRequest] with the information stored in the [json].
   ///
   /// Throws a [JsonMissingKeyException] if there is missing one of the needed
   /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender],
@@ -37,9 +37,9 @@ class SubscriptionRequest extends Message {
   /// ) in the [json].
   /// Throws a [InvalidJsonSchemaException] if some values
   /// doesn't match the expected value type.
-  factory SubscriptionRequest.fromJson(Map<String, dynamic> json) {
+  factory EventSubscriptionRequest.fromJson(Map<String, dynamic> json) {
     try {
-      final SubscriptionRequest msg = SubscriptionRequest()
+      final EventSubscriptionRequest msg = EventSubscriptionRequest()
         ..generateFromJson(json)
         ..filter = json.containsKey(BrokerKeys.filter)
             ? json[BrokerKeys.filter] as String
@@ -76,13 +76,13 @@ class SubscriptionRequest extends Message {
 /// This is used for the S3I-Event-System, see
 /// https://github.com/LukasPoque/s3i_flutter/issues/9#issuecomment-925665563
 /// for the current draft.
-class SubscriptionResponse extends Message {
-  /// Creates a [SubscriptionResponse] with a newly generated UUIDv4 if
+class EventSubscriptionResponse extends Message {
+  /// Creates a [EventSubscriptionResponse] with a newly generated UUIDv4 if
   /// [messageId] is not set.
   ///
   /// Creates empty defaults for [receivers], [sender], [topic] and sets [ok]
   /// to false.
-  SubscriptionResponse(
+  EventSubscriptionResponse(
       {String? messageId,
       Set<String> receivers = const <String>{},
       String sender = '',
@@ -97,7 +97,7 @@ class SubscriptionResponse extends Message {
             replyingToMessage: replyingToMessage,
             replyToEndpoint: replyToEndpoint);
 
-  /// Creates a [SubscriptionResponse] with the information stored in the
+  /// Creates a [EventSubscriptionResponse] with the information stored in the
   /// [json].
   ///
   /// Throws a [JsonMissingKeyException] if there is missing one of the needed
@@ -105,9 +105,9 @@ class SubscriptionResponse extends Message {
   /// [BrokerKeys.serviceType], [BrokerKeys.ok]) in the [json].
   /// Throws a [InvalidJsonSchemaException] if some values
   /// doesn't match the expected value type.
-  factory SubscriptionResponse.fromJson(Map<String, dynamic> json) {
+  factory EventSubscriptionResponse.fromJson(Map<String, dynamic> json) {
     try {
-      final SubscriptionResponse msg = SubscriptionResponse()
+      final EventSubscriptionResponse msg = EventSubscriptionResponse()
         ..generateFromJson(json)
         ..topic = json.containsKey(BrokerKeys.topic)
             ? json[BrokerKeys.topic] as String
@@ -125,7 +125,7 @@ class SubscriptionResponse extends Message {
   /// The topic used to publish the event messages (ThingId.eventTopic).
   String topic;
 
-  /// Indicates if the [SubscriptionRequest] was correct.
+  /// Indicates if the [EventSubscriptionRequest] was correct.
   bool ok;
 
   @override
