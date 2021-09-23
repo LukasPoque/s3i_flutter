@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
-import 'package:s3i_flutter/src/broker/attribute_value_messages.dart';
+import 'package:s3i_flutter/src/broker/messages/attribute_value_messages.dart';
 import 'package:s3i_flutter/src/broker/messages/message.dart';
 import 'package:s3i_flutter/src/broker/messages/service_messages.dart';
 import 'package:s3i_flutter/src/broker/messages/user_message.dart';
