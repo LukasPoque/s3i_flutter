@@ -21,12 +21,14 @@ class S3ICore {
   ///
   /// The [authManager] needs to be correctly setup and if you wish to connect
   /// to a different address of the S3I-Directory you could specify this in
-  /// the [directoryUrl].
+  /// the [directoryUrl]. Use [configApiUrl] to specify an other endpoint
+  /// for the Config-API.
   ///
   /// Could throw a [UnsupportedError] if no platform appropriate client
   /// could be created.
   S3ICore(this.authManager,
-      {this.directoryUrl = 'https://dir.s3i.vswf.dev/api/2'}) {
+      {this.directoryUrl = 'https://dir.s3i.vswf.dev/api/2',
+      this.configApiUrl = 'https://config.s3i.vswf.dev/'}) {
     _directoryClient = Client();
   }
 
@@ -36,6 +38,9 @@ class S3ICore {
 
   /// The address which is used for all requests to the directory.
   final String directoryUrl;
+
+  /// The address which is used for all request to the Config-API.
+  final String configApiUrl;
 
   /// The http client which is used for all request to the directory.
   late Client _directoryClient; // TODO(poq): when to close?
@@ -146,6 +151,9 @@ class S3ICore {
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
     } on InvalidJsonSchemaException catch (e) {
       throw ResponseParsingException(e);
+    } on TypeError catch (e) {
+      throw ResponseParsingException(
+          InvalidJsonSchemaException(e.stackTrace.toString(), response.body));
     }
   }
 
@@ -182,6 +190,9 @@ class S3ICore {
       throw ResponseParsingException(e);
     } on InvalidJsonSchemaException catch (e) {
       throw ResponseParsingException(e);
+    } on TypeError catch (e) {
+      throw ResponseParsingException(
+          InvalidJsonSchemaException(e.stackTrace.toString(), response.body));
     }
   }
 
