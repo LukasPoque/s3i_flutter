@@ -74,6 +74,17 @@ abstract class BrokerInterface {
   }
 }
 
+/// The [PassiveBrokerInterface] is the baseclass for all broker interfaces
+/// where the user needs to call a method to see if a new message is available.
+abstract class PassiveBrokerInterface extends BrokerInterface {
+  /// Creates a new [PassiveBrokerInterface] with the given [authManager].
+  PassiveBrokerInterface(AuthenticationManager authManager)
+      : super(authManager);
+
+  /// Returns a [Message] if it's available at the [endpoint], null otherwise.
+  Message? getMessage(String endpoint);
+}
+
 /// The [ActiveBrokerInterface] is the baseclass for all broker interfaces
 /// which inform the user asynchronous (via a callback) when a new message is
 /// available.
@@ -461,15 +472,4 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
       callback(message);
     }
   }
-}
-
-/// The [PassiveBrokerInterface] is the baseclass for all broker interfaces
-/// where the user needs to call a method to see if a new message is available.
-abstract class PassiveBrokerInterface extends BrokerInterface {
-  /// Creates a new [PassiveBrokerInterface] with the given [authManager].
-  PassiveBrokerInterface(AuthenticationManager authManager)
-      : super(authManager);
-
-  /// Returns a [Message] if it's available at the [endpoint], null otherwise.
-  Message? getMessage(String endpoint);
 }
