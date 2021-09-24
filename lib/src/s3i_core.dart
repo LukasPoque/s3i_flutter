@@ -61,6 +61,105 @@ class S3ICore {
     return authManager.logout();
   }
 
+  //config api --------------------
+
+  /// Generates an authorized `POST` to the Config-API.
+  ///
+  /// The [path] should starts with a `/` and the [jsonBody] should be a valid
+  /// json. For more information see `https://config.s3i.vswf.dev/apidoc/#/`.
+  /// If you need to add additional information to the header,
+  /// use [additionalHeaderFields].
+  ///
+  /// Throws a [FormatException] if the [path] could not be parsed to a
+  /// valid [Uri]. Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] throws an exception. If there is no
+  /// internet connection available a [SocketException] is thrown.
+  Future<Response> postConfig(String path,
+      {Map<String, String> additionalHeaderFields = const <String, String>{},
+      required Map<String, dynamic> jsonBody}) async {
+    String originalToken = '';
+    try {
+      final AccessToken token = await authManager.getAccessToken();
+      originalToken = token.originalToken;
+    } on Exception catch (e) {
+      throw NetworkAuthenticationException(e);
+    }
+    final Map<String, String> headers = <String, String>{
+      'Content-Type': 'application/json'
+    }
+      ..addAll(<String, String>{'Authorization': 'Bearer $originalToken'})
+      ..addAll(additionalHeaderFields);
+    return Client().post(Uri.parse(configApiUrl + path),
+        headers: headers, body: utf8.encode(jsonEncode(jsonBody)));
+  }
+
+  /// Generates an authorized `DELETE` to the Config-API.
+  ///
+  /// The [path] should starts with a `/`. For more information see
+  /// `https://config.s3i.vswf.dev/apidoc/#/`.
+  /// If you need to add additional information to the header,
+  /// use [additionalHeaderFields].
+  ///
+  /// Throws a [FormatException] if the [path] could not be parsed to a
+  /// valid [Uri]. Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] throws an exception. If there is no
+  /// internet connection available a [SocketException] is thrown.
+  Future<Response> deleteConfig(String path,
+      {Map<String, String> additionalHeaderFields =
+          const <String, String>{}}) async {
+    String originalToken = '';
+    try {
+      final AccessToken token = await authManager.getAccessToken();
+      originalToken = token.originalToken;
+    } on Exception catch (e) {
+      throw NetworkAuthenticationException(e);
+    }
+    final Map<String, String> headers = <String, String>{
+      'Content-Type': 'application/json'
+    }
+      ..addAll(<String, String>{'Authorization': 'Bearer $originalToken'})
+      ..addAll(additionalHeaderFields);
+    return Client().delete(Uri.parse(configApiUrl + path), headers: headers);
+  }
+
+  /// Creates a new endpoint (queue with the matching binding) in the
+  /// S3I-Broker.
+  ///
+  /// Use [encrypted] to specify if the endpoint should indicate that decrypted
+  /// messages are expected.
+  ///
+  /// Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] fails. Throws a [SocketException]
+  /// if no internet connection is available. Throws a
+  /// [NetworkResponseException] if the received status code is not 201. Throws
+  /// a [ResponseParsingException] if something went wrong during the parsing
+  /// to the directory objects.
+  Future<Endpoint> createBrokerEndpoint(String thingId,
+      {bool encrypted = false}) async {
+    final Response response = await postConfig('/things/$thingId/broker',
+        jsonBody: <String, bool>{'encrypted': encrypted});
+    if (response.statusCode != 201) throw NetworkResponseException(response);
+    try {
+      return Endpoint((jsonDecode(response.body)
+          as Map<String, dynamic>)['queue_name'] as String);
+    } on TypeError catch (e) {
+      throw ResponseParsingException(
+          InvalidJsonSchemaException(e.stackTrace.toString(), response.body));
+    }
+  }
+
+  /// Removes an endpoint (queue with the matching binding) from the
+  /// S3I-Broker.
+  ///
+  /// Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] fails. Throws a [SocketException]
+  /// if no internet connection is available. Throws a
+  /// [NetworkResponseException] if the received status code is not 204.
+  Future<void> removeBrokerEndpoint(String thingId) async {
+    final Response response = await deleteConfig('/things/$thingId/broker');
+    if (response.statusCode != 204) throw NetworkResponseException(response);
+  }
+
   //directory --------------------
 
   /// Generates an authorized `GET` to the S3I-Directory.
