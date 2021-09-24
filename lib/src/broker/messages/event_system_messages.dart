@@ -29,7 +29,8 @@ class EventSubscriptionRequest extends Message {
             replyingToMessage: replyingToMessage,
             replyToEndpoint: replyToEndpoint);
 
-  /// Creates a [EventSubscriptionRequest] with the information stored in the [json].
+  /// Creates a [EventSubscriptionRequest] with the information stored in
+  /// the [json].
   ///
   /// Throws a [JsonMissingKeyException] if there is missing one of the needed
   /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender],

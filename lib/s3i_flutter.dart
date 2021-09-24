@@ -7,10 +7,10 @@ export 'src/auth/oauth_proxy_flow.dart';
 export 'src/auth/tokens.dart';
 
 //broker
-export 'src/broker/messages/attribute_value_messages.dart';
 export 'src/broker/broker_interfaces.dart';
 export 'src/broker/broker_rest_connector.dart'
     if (dart.library.io) 'src/broker/broker_amqp_connector.dart';
+export 'src/broker/messages/attribute_value_messages.dart';
 export 'src/broker/messages/service_messages.dart';
 export 'src/broker/messages/user_message.dart';
 
