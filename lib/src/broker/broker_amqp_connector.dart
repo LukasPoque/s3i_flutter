@@ -15,6 +15,16 @@ import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
 /// parameters).
 ///
 /// This is needed to use the same interface on web and other platforms.
+///
+/// The [args] have defaults for the normal message communication in the S3I:
+/// - brokerHost = 'rabbitmq.s3i.vswf.dev',
+/// - port = 5672,
+/// - virtualHost = 's3i',
+/// - maxConnectionAttempts = 3,
+/// - reconnectWaitTime = const Duration(milliseconds: 1500),
+/// - prefetchCount = -1,
+/// - exchangeName = 'demo.direct',
+/// - exchangeType = ExchangeType.DIRECT
 ActiveBrokerInterface getActiveBrokerDefaultConnector(
     AuthenticationManager authManager,
     {Map<String, dynamic> args = const <String, dynamic>{}}) {
@@ -25,14 +35,33 @@ ActiveBrokerInterface getActiveBrokerDefaultConnector(
   final int maxConnectionAttempts = args['maxConnectionAttempts'] as int? ?? 3;
   final Duration reconnectWaitTime = args['reconnectWaitTime'] as Duration? ??
       const Duration(milliseconds: 1500);
+  final int prefetchCount = args['prefetchCount'] as int? ?? -1;
   final String exchangeName = args['exchangeName'] as String? ?? 'demo.direct';
+  final ExchangeType exchangeType =
+      args['exchangeType'] as ExchangeType? ?? ExchangeType.DIRECT;
+
   return BrokerAmqpConnector(authManager,
       brokerHost: brokerHost,
       port: port,
       virtualHost: virtualHost,
       maxConnectionAttempts: maxConnectionAttempts,
       reconnectWaitTime: reconnectWaitTime,
-      exchangeName: exchangeName);
+      prefetchCount: prefetchCount,
+      exchangeName: exchangeName,
+      exchangeType: exchangeType);
+}
+
+/// Creates a new [BrokerAmqpConnector] configured to be used for the
+/// Event System.
+///
+/// See [getActiveBrokerDefaultConnector] for more information.
+ActiveBrokerInterface getActiveBrokerEventConnector(
+    AuthenticationManager authManager,
+    {Map<String, dynamic> args = const <String, dynamic>{}}) {
+  if (args.containsKey('exchangeName')) args['exchangeName'] = 'eventExchange';
+  if (args.containsKey('exchangeType'))
+    args['exchangeType'] = ExchangeType.TOPIC;
+  return getActiveBrokerDefaultConnector(authManager, args: args);
 }
 
 /// This [ActiveBrokerInterface] implementation uses the native messaging
@@ -45,16 +74,15 @@ ActiveBrokerInterface getActiveBrokerDefaultConnector(
 class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// Creates a [BrokerAmqpConnector] which uses the [authManager] to receive
   /// tokens.
-  ///
-  /// Unless you know what you are doing, don't change the default values
-  /// of the named parameters.
   BrokerAmqpConnector(AuthenticationManager authManager,
-      {this.brokerHost = 'rabbitmq.s3i.vswf.dev',
-      this.port = 5672,
-      this.virtualHost = 's3i',
-      this.maxConnectionAttempts = 3,
-      this.reconnectWaitTime = const Duration(milliseconds: 1500),
-      this.exchangeName = 'demo.direct'})
+      {required this.brokerHost,
+      required this.port,
+      required this.virtualHost,
+      required this.maxConnectionAttempts,
+      required this.reconnectWaitTime,
+      required this.prefetchCount,
+      required this.exchangeName,
+      required this.exchangeType})
       : super(authManager);
 
   /// The host to connect to.
@@ -72,8 +100,18 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// The time between each reconnect attempt.
   final Duration reconnectWaitTime;
 
+  /// The number of messages loaded to the client without ACK.
+  ///
+  /// If this number is < 0 no prefetch count is set => infinite prefetch.
+  final int prefetchCount;
+
   /// The name of the amqp broker exchange.
   final String exchangeName;
+
+  /// The type of the exchange, see
+  /// [here](https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges)
+  /// for more information.
+  final ExchangeType exchangeType;
 
   /// Stores all endpoints and their consumer queues.
   final Map<String, Consumer> _endpointConsumer = <String, Consumer>{};
@@ -215,8 +253,11 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
     if (_amqpClient == null) throw S3IException('amqp client is null');
     try {
       _channel = await _amqpClient!.channel();
-      _exchange = await _channel!
-          .exchange(exchangeName, ExchangeType.DIRECT, passive: true);
+      if (prefetchCount >= 0) {
+        _channel = await _channel!.qos(null, prefetchCount);
+      }
+      _exchange =
+          await _channel!.exchange(exchangeName, exchangeType, passive: true);
     } on Exception catch (e) {
       throw S3IException('amqp package error: $e');
     }

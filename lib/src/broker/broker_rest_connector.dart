@@ -15,6 +15,11 @@ import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
 /// parameters).
 ///
 /// This is needed to use the same interface on web and other platforms.
+///
+///The [args] have defaults for the normal message communication in the S3I:
+/// - brokerBaseUrl = 'https://broker.s3i.vswf.dev/'
+/// - maxMessagesPerInterval = 10,
+/// - pollingInterval = Duration(seconds: 1)
 ActiveBrokerInterface getActiveBrokerDefaultConnector(
     AuthenticationManager authManager,
     {Map<String, dynamic> args = const <String, dynamic>{}}) {
@@ -30,6 +35,16 @@ ActiveBrokerInterface getActiveBrokerDefaultConnector(
       pollingInterval: pollingInterval);
 }
 
+/// Creates a new [BrokerRestConnector] configured to be used for the
+/// Event System.
+///
+/// See [getActiveBrokerDefaultConnector] for more information.
+ActiveBrokerInterface getActiveBrokerEventConnector(
+    AuthenticationManager authManager,
+    {Map<String, dynamic> args = const <String, dynamic>{}}) {
+  throw UnimplementedError('WEB is currently unsupported');
+}
+
 /// This [ActiveBrokerInterface] implementation uses the S3I-Broker REST API
 /// to send and receive messages.
 ///
@@ -41,9 +56,9 @@ class BrokerRestConnector extends ActiveBrokerInterface {
   /// Creates a [BrokerRestConnector] which polls for a new message every
   /// [pollingInterval].
   BrokerRestConnector(AuthenticationManager authManager,
-      {this.brokerBaseUrl = 'https://broker.s3i.vswf.dev/',
-      this.maxMessagesPerInterval = 10,
-      this.pollingInterval = const Duration(seconds: 1)})
+      {required this.brokerBaseUrl,
+      required this.maxMessagesPerInterval,
+      required this.pollingInterval})
       : super(authManager);
 
   /// The base url of the REST-API.
