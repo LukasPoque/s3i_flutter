@@ -92,7 +92,8 @@ The goal for `Version 1.0.0` is to cover the important endpoints of the main S³
   - [ ] Work with DeleteAttributeMessages
   - [ ] Work with CreateAttributeMessages
   - [x] Work with messages from the EventSystem
-  - [ ] Create/delete broker queues for the EventSystem
+  - [x] Create/delete broker queues for the EventSystem
+  - [ ] Simple to use wrapper for the EventSystem
 
 
 ## Usage

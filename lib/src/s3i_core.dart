@@ -133,7 +133,7 @@ class S3ICore {
   /// if no internet connection is available. Throws a
   /// [NetworkResponseException] if the received status code is not 201. Throws
   /// a [ResponseParsingException] if something went wrong during the parsing
-  /// to the directory objects.
+  /// to an [Endpoint].
   Future<Endpoint> createBrokerEndpoint(String thingId,
       {bool encrypted = false}) async {
     final Response response = await postConfig('/things/$thingId/broker',
@@ -157,6 +157,49 @@ class S3ICore {
   /// [NetworkResponseException] if the received status code is not 204.
   Future<void> removeBrokerEndpoint(String thingId) async {
     final Response response = await deleteConfig('/things/$thingId/broker');
+    if (response.statusCode != 204) throw NetworkResponseException(response);
+  }
+
+  /// Creates a new queue binding to the `eventExchange` in the
+  /// S3I-Broker.
+  ///
+  /// Use [topic] to specify on which AMQP message topic the queue should be
+  /// bound. Use the optional parameter [queueLength] (> 0) if you need a
+  /// specific queue length.
+  ///
+  /// Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] fails. Throws a [SocketException]
+  /// if no internet connection is available. Throws a
+  /// [NetworkResponseException] if the received status code is not 201. Throws
+  /// a [ResponseParsingException] if something went wrong during the parsing
+  /// to an [Endpoint].
+  Future<Endpoint> createEventQueueBinding(String thingId, String topic,
+      {int queueLength = 0}) async {
+    final Map<String, dynamic> requestBody = <String, dynamic>{'topic': topic};
+    if (queueLength > 0) {
+      requestBody['queue_length'] = queueLength;
+    }
+    final Response response = await postConfig('/things/$thingId/broker/event',
+        jsonBody: requestBody);
+    if (response.statusCode != 201) throw NetworkResponseException(response);
+    try {
+      return Endpoint((jsonDecode(response.body)
+          as Map<String, dynamic>)['queue_name'] as String);
+    } on TypeError catch (e) {
+      throw ResponseParsingException(
+          InvalidJsonSchemaException(e.stackTrace.toString(), response.body));
+    }
+  }
+
+  /// Removes the event endpoint from the S3I-Broker.
+  ///
+  /// Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] fails. Throws a [SocketException]
+  /// if no internet connection is available. Throws a
+  /// [NetworkResponseException] if the received status code is not 204.
+  Future<void> removeEventQueue(String thingId) async {
+    final Response response =
+        await deleteConfig('/things/$thingId/broker/event');
     if (response.statusCode != 204) throw NetworkResponseException(response);
   }
 
