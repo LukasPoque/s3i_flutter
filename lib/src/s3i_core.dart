@@ -28,9 +28,7 @@ class S3ICore {
   /// could be created.
   S3ICore(this.authManager,
       {this.directoryUrl = 'https://dir.s3i.vswf.dev/api/2',
-      this.configApiUrl = 'https://config.s3i.vswf.dev/'}) {
-    _directoryClient = Client();
-  }
+      this.configApiUrl = 'https://config.s3i.vswf.dev/'});
 
   /// The authentication manager used by this instance to get
   /// valid access tokens.
@@ -41,9 +39,6 @@ class S3ICore {
 
   /// The address which is used for all request to the Config-API.
   final String configApiUrl;
-
-  /// The http client which is used for all request to the directory.
-  late Client _directoryClient; // TODO(poq): when to close?
 
   /// Returns a valid [AccessToken] form the [authManager].
   ///
@@ -230,8 +225,7 @@ class S3ICore {
     }
       ..addAll(<String, String>{'Authorization': 'Bearer $originalToken'})
       ..addAll(additionalHeaderFields);
-    return _directoryClient.get(Uri.parse(directoryUrl + path),
-        headers: headers);
+    return Client().get(Uri.parse(directoryUrl + path), headers: headers);
   }
 
   /// Generates an authorized `PUT` to the S3I-Directory.
@@ -260,7 +254,7 @@ class S3ICore {
     }
       ..addAll(<String, String>{'Authorization': 'Bearer $originalToken'})
       ..addAll(additionalHeaderFields);
-    return _directoryClient.put(Uri.parse(directoryUrl + path),
+    return Client().put(Uri.parse(directoryUrl + path),
         headers: headers, body: utf8.encode(jsonEncode(jsonBody)));
   }
 
