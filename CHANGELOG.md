@@ -1,3 +1,13 @@
+## 0.5.0
+
+Add S3I Event System functionality:
+
+-  EventMessage, EventSubscriptionRequest, EventSubscriptionReply
+-  `POST` and `DELETE` methods for the S3I-Config-API
+-  Methods to create/remove normal and event broker endpoints (queues)
+-  Method to configure the `ActiveBrokerInterfaces` to be used as an event broker
+-  `EventSystemConnector` - a class to simplify the subscription to custom/named events
+
 ## 0.4.1
 
 Fix utf8 encoding problems.
