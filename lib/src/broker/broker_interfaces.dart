@@ -322,7 +322,7 @@ abstract class ActiveBrokerInterface extends BrokerInterface {
 
   /// Subscribes to all received EventSubscriptionResponse
   /// (EventSubscriptionResponseReceived-Event).
-  void subscribeEventSubscriptionResponse(
+  void subscribeEventSubscriptionResponseReceived(
       Function(EventSubscriptionResponse) callback) {
     _callbacksForEventSubscriptionResponse.add(callback);
   }
