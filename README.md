@@ -47,6 +47,56 @@ Please see [pub.dev](https://pub.dev/packages/s3i_flutter/install) for instructi
 If you like this package, consider supporting it by giving a star on [GitHub](https://github.com/LukasPoque/s3i_flutter) and 
 a like on [pub.dev](https://pub.dev/packages/s3i_flutter) :heart:
 
+## Features
+
+The goal for `Version 1.0.0` is to cover the important endpoints of the main S³I components and provide useful data classes to wrap the JSON-data. For `Version 2.0.0` there should be more functionality to work with the data classes, especially with the (F)ML4.0 language.
+
+#### Roadmap to Version 1.0.0
+
+- Authentication
+  - [x] Authenticate an user via the S3I-OAuthProxy
+  - [x] Use an refresh/offline token for less user interaction during authentication
+  - [ ] Enable saving the refresh/offline token for authentication after a restart or offline
+  - [ ] Authenticate an user via default OpenId-Connect (with redirect url)
+
+- Directory
+  - [x] Provide basic PUT/GET/DELETE request methods
+  - [x] Request a single thing (with filter options)
+  - [x] Modify a single thing
+  - [x] Request a policy entry
+  - [x] Modify a policy entry
+  - [ ] Query the directory via thing search
+  - [ ] Find the owner of a thing
+  - [ ] Find all things that belongs to a specific person
+  - [ ] Create/delete a new thing in the S³I (adds a basic thing entry to the directory and creates a client in the identity provider)
+
+- Repository
+  - [ ] Provide basic PUT/GET/DELETE request methods
+  - [ ] Request a single thing (with filter options)
+  - [ ] Modify a single thing
+  - [ ] Request a policy entry
+  - [ ] Modify a policy entry
+  - [ ] Query the repository via thing search
+  - [ ] Create/delete a new thing entry in the repository
+  - [ ] Receive live updates from the cloud copy of a thing
+  - [ ] Send live updates to the cloud copy of a thing
+  
+- Messaging
+  - [x] Create/delete a new broker queue (bound to the direct exchange)
+  - [x] Receive/send messages using AMQP (not usable for web)
+  - [x] Receive/sent messages using the REST endpoint of the S3I-Broker-API
+  - [x] Work with UserMessages
+  - [x] Work with ServiceMessages
+  - [x] Work with GetValueMessages
+  - [ ] Work with SetValueMessages
+  - [ ] Work with DeleteAttributeMessages
+  - [ ] Work with CreateAttributeMessages
+  - [x] Work with messages from the EventSystem
+  - [x] Create/delete broker queues for the EventSystem
+  - [x] Simple to use wrapper for the EventSystem (as a subscriber)
+  - [ ] Helper functions for the EventSystem as publisher
+
+
 ## Usage
 
 For a basic example application see the [example](https://github.com/LukasPoque/s3i_flutter/tree/master/example).
@@ -175,7 +225,7 @@ brokerConnector.subscribeServiceReplyReceived((ServiceReply msg) {
 });
 ```
 
-If all callback you're interested in are registered it's time to start consuming on one (or multiple) queues on the S3I-Broker. 
+If all callbacks you're interested in are registered it's time to start consuming on one (or multiple) queues on the S3I-Broker. 
 For that simply call `startConsuming`. If you don't want any open connections left when your app closes, call `stopConsuming` with the same endpoint
 in your dispose method.
 ```dart
@@ -205,7 +255,7 @@ brokerConnector.sendMessage(requestMsg, <String>{'<SERVICE ENDPOINT>'});
 
 The package is divided in domain specific folders.
 
-TODO: ...
+The `S3ICore` uses this classes and provides methods to access the REST-APIs easier.
 
 ### Auth
 
@@ -231,8 +281,9 @@ At the moment, there are only active broker interfaces implemented:
 
 Currently the following message types are supported:
 - `UserMessage`: used for communication between two real users.
-- `ServiceMessage`: used to invoke service functions or receive service answers from S3I-Services.
-- `GetValueMessage`: used to get a specific value from an other thing.
+- `ServiceMessages`: used to invoke service functions or receive service answers from S3I-Services.
+- `GetValueMessages`: used to get a specific value from an other thing.
+- `EventSystemMessages`: used to receive/subscribe to events via the [S3I-Event-System](https://github.com/LukasPoque/s3i_flutter/issues/9#issuecomment-925665563).
 
 ### Directory
 

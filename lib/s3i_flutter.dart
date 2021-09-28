@@ -7,12 +7,12 @@ export 'src/auth/oauth_proxy_flow.dart';
 export 'src/auth/tokens.dart';
 
 //broker
-export 'src/broker/attribute_value_messages.dart';
+export 'src/broker/broker_amqp_connector.dart'
+    if (dart.library.js) 'src/broker/broker_rest_connector.dart';
 export 'src/broker/broker_interfaces.dart';
-export 'src/broker/broker_rest_connector.dart'
-    if (dart.library.io) 'src/broker/broker_amqp_connector.dart';
-export 'src/broker/service_messages.dart';
-export 'src/broker/user_message.dart';
+export 'src/broker/messages/attribute_value_messages.dart';
+export 'src/broker/messages/service_messages.dart';
+export 'src/broker/messages/user_message.dart';
 
 //directory
 export 'src/directory/dir_object.dart';

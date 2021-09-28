@@ -143,6 +143,15 @@ class BrokerKeys {
   ///userMessage
   static const String userMessage = 'userMessage';
 
+  ///customEventRequest
+  static const String customEventRequest = 'customEventRequest';
+
+  ///customEventReply
+  static const String customEventReply = 'customEventReply';
+
+  ///eventMessage
+  static const String eventMessage = 'eventMessage';
+
   ///serviceRequest
   static const String serviceRequest = 'serviceRequest';
 
@@ -222,4 +231,19 @@ class BrokerKeys {
 
   ///ok
   static const String ok = 'ok';
+
+  ///filter
+  static const String filter = 'filter';
+
+  ///attributePaths
+  static const String attributePaths = 'attributePaths';
+
+  ///topic
+  static const String topic = 'topic';
+
+  ///timestamp
+  static const String timestamp = 'timestamp';
+
+  ///content
+  static const String content = 'content';
 }
