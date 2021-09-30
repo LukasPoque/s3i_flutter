@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
+import 'package:s3i_flutter/src/auth/keycloak_client_representation.dart';
 import 'package:s3i_flutter/src/exceptions/network_authentication_exception.dart';
 import 'package:s3i_flutter/src/exceptions/response_parsing_exception.dart';
 import 'package:s3i_flutter/src/utils/json_keys.dart';
@@ -115,6 +116,46 @@ class S3ICore {
       ..addAll(<String, String>{'Authorization': 'Bearer $originalToken'})
       ..addAll(additionalHeaderFields);
     return Client().delete(Uri.parse(configApiUrl + path), headers: headers);
+  }
+
+  /// Creates a new thing in the S3I with the current user as owner.
+  ///
+  /// Returns the id and the secret of the new created thing. See
+  /// https://config.s3i.vswf.dev/apidoc/#/Things/post_things_ for more
+  /// information.
+  ///
+  /// Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] fails. Throws a [SocketException]
+  /// if no internet connection is available. Throws a
+  /// [NetworkResponseException] if the received status code is not 201. Throws
+  /// a [ResponseParsingException] if something went wrong during the parsing
+  /// to an [Endpoint].
+  Future<ClientIdentity> createNewThing(
+      {KeycloakClientRepresentation? fullClient}) async {
+    fullClient ??= KeycloakClientRepresentation();
+    final Response response =
+        await postConfig('/things/', jsonBody: fullClient.toJson());
+    if (response.statusCode != 201) throw NetworkResponseException(response);
+    try {
+      return ClientIdentity.fromJson(
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>);
+    } on InvalidJsonSchemaException catch (e) {
+      throw ResponseParsingException(e);
+    } on TypeError catch (e) {
+      throw ResponseParsingException(S3IException(e.stackTrace.toString()));
+    }
+  }
+
+  /// Delete the thing in the whole S3I, including directory, repository,
+  /// identity provider and the broker.
+  ///
+  /// Throws a [NetworkAuthenticationException] if
+  /// [AuthenticationManager.getAccessToken] fails. Throws a [SocketException]
+  /// if no internet connection is available. Throws a
+  /// [NetworkResponseException] if the received status code is not 204.
+  Future<void> deleteThing(String thingId) async {
+    final Response response = await deleteConfig('/things/$thingId');
+    if (response.statusCode != 204) throw NetworkResponseException(response);
   }
 
   /// Creates a new endpoint (queue with the matching binding) in the

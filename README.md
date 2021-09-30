@@ -66,9 +66,15 @@ The goal for `Version 1.0.0` is to cover the important endpoints of the main S³
   - [x] Request a policy entry
   - [x] Modify a policy entry
   - [ ] Query the directory via thing search
-  - [ ] Find the owner of a thing
   - [ ] Find all things that belongs to a specific person
-  - [ ] Create/delete a new thing in the S³I (adds a basic thing entry to the directory and creates a client in the identity provider)
+  
+- Config
+  - [ ] Find the owner of a thing
+  - [x] Create/delete a new thing in the S³I (adds a basic thing entry to the directory and creates a client in the identity provider)
+  - [ ] Update a thing in the identity provider
+  - [ ] Query a thing in the identity provider
+  - [x] Create/delete broker queues for the EventSystem
+  - [x] Create/delete a new broker queue (bound to the direct exchange)
 
 - Repository
   - [ ] Provide basic PUT/GET/DELETE request methods
@@ -82,7 +88,6 @@ The goal for `Version 1.0.0` is to cover the important endpoints of the main S³
   - [ ] Send live updates to the cloud copy of a thing
   
 - Messaging
-  - [x] Create/delete a new broker queue (bound to the direct exchange)
   - [x] Receive/send messages using AMQP (not usable for web)
   - [x] Receive/sent messages using the REST endpoint of the S3I-Broker-API
   - [x] Work with UserMessages
@@ -92,7 +97,6 @@ The goal for `Version 1.0.0` is to cover the important endpoints of the main S³
   - [ ] Work with DeleteAttributeMessages
   - [ ] Work with CreateAttributeMessages
   - [x] Work with messages from the EventSystem
-  - [x] Create/delete broker queues for the EventSystem
   - [x] Simple to use wrapper for the EventSystem (as a subscriber)
   - [ ] Helper functions for the EventSystem as publisher
 
