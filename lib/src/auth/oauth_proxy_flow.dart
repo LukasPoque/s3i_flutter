@@ -88,11 +88,13 @@ class OAuthProxyFlow extends AuthenticationManager {
   /// If there is no internet connection a [SocketException] is thrown.
   @override
   Future<AccessToken> getAccessToken({int tokenValidBuffer = 10}) async {
-    if (_accessToken != null && _refreshToken != null) {
+    if (_accessToken != null) {
       //check if current _accessToken is valid
       if (_accessToken!.isNotExpired(timeBufferInSeconds: tokenValidBuffer)) {
         return _accessToken!;
       }
+    }
+    if(_refreshToken != null) {
       //check if _refreshToken is valid and try to get a new access token
       if (_refreshToken!.isNotExpired(timeBufferInSeconds: tokenValidBuffer)) {
         final http.Response response =
