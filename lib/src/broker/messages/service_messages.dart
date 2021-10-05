@@ -72,7 +72,7 @@ class ServiceRequest extends ServiceMessage {
       String? replyingToMessage,
       String? replyToEndpoint,
       String serviceType = '',
-      this.parameters})
+      this.parameters = const <String, dynamic>{}})
       : super(
             messageId: messageId,
             receivers: receivers,
@@ -85,7 +85,7 @@ class ServiceRequest extends ServiceMessage {
   ///
   /// Throws a [JsonMissingKeyException] if there is missing one of the needed
   /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender],
-  /// [BrokerKeys.serviceType]) in the [json].
+  /// [BrokerKeys.serviceType], [BrokerKeys.parameters]) in the [json].
   /// Throws a [InvalidJsonSchemaException] if some values
   /// doesn't match the expected value type.
   factory ServiceRequest.fromJson(Map<String, dynamic> json) {
@@ -94,7 +94,8 @@ class ServiceRequest extends ServiceMessage {
         ..generateFromJson(json)
         ..parameters = json.containsKey(BrokerKeys.parameters)
             ? json[BrokerKeys.parameters] as Map<String, dynamic>
-            : null;
+            : throw JsonMissingKeyException(
+                BrokerKeys.parameters, json.toString());
       return msg;
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
@@ -105,13 +106,13 @@ class ServiceRequest extends ServiceMessage {
   /// The parameter passed to the service.
   ///
   /// If and what for parameters needed is documented in the fml4.0 method.
-  Map<String, dynamic>? parameters;
+  Map<String, dynamic> parameters;
 
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = super.toJson();
     newJson[BrokerKeys.messageType] = BrokerKeys.serviceRequest;
-    if (parameters != null) newJson[BrokerKeys.parameters] = parameters;
+    newJson[BrokerKeys.parameters] = parameters;
     return newJson;
   }
 }
@@ -129,7 +130,7 @@ class ServiceReply extends ServiceMessage {
       String? replyingToMessage,
       String? replyToEndpoint,
       String serviceType = '',
-      this.results})
+      this.results = const <String, dynamic>{}})
       : super(
             messageId: messageId,
             receivers: receivers,
@@ -142,7 +143,7 @@ class ServiceReply extends ServiceMessage {
   ///
   /// Throws a [JsonMissingKeyException] if there is missing one of the needed
   /// keys ([BrokerKeys.identifier], [BrokerKeys.receivers],[BrokerKeys.sender],
-  /// [BrokerKeys.serviceType]) in the [json].
+  /// [BrokerKeys.serviceType], [BrokerKeys.results]) in the [json].
   /// Throws a [InvalidJsonSchemaException] if some values
   /// doesn't match the expected value type.
   factory ServiceReply.fromJson(Map<String, dynamic> json) {
@@ -151,7 +152,8 @@ class ServiceReply extends ServiceMessage {
         ..generateFromJson(json)
         ..results = json.containsKey(BrokerKeys.results)
             ? json[BrokerKeys.results] as Map<String, dynamic>
-            : null;
+            : throw JsonMissingKeyException(
+                BrokerKeys.results, json.toString());
       return msg;
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
@@ -163,13 +165,13 @@ class ServiceReply extends ServiceMessage {
   ///
   /// If and what for parameters are returned is documented in the
   /// fml4.0 method.
-  Map<String, dynamic>? results;
+  Map<String, dynamic> results;
 
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = super.toJson();
     newJson[BrokerKeys.messageType] = BrokerKeys.serviceReply;
-    if (results != null) newJson[BrokerKeys.results] = results;
+    newJson[BrokerKeys.results] = results;
     return newJson;
   }
 }
