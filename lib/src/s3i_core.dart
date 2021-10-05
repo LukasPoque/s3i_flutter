@@ -199,7 +199,7 @@ class S3ICore {
   /// Creates a new queue binding to the `eventExchange` in the
   /// S3I-Broker.
   ///
-  /// Use [topic] to specify on which AMQP message topic the queue should be
+  /// Use [topic] to specify on which AMQP message topics the queue should be
   /// bound. Use the optional parameter [queueLength] (> 0) if you need a
   /// specific queue length.
   ///
@@ -209,7 +209,8 @@ class S3ICore {
   /// [NetworkResponseException] if the received status code is not 201. Throws
   /// a [ResponseParsingException] if something went wrong during the parsing
   /// to an [Endpoint].
-  Future<Endpoint> createEventQueueBinding(String thingId, String topic,
+  Future<Endpoint> createEventQueueBinding(
+      String thingId, Iterable<String> topic,
       {int queueLength = 0}) async {
     final Map<String, dynamic> requestBody = <String, dynamic>{'topic': topic};
     if (queueLength > 0) {
