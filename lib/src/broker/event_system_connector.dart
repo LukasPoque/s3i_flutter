@@ -8,29 +8,39 @@ import 'package:s3i_flutter/src/broker/messages/event_system_messages.dart';
 
 /// The [EventSystemConnector] simplifies the usage of the S3I-Event-System.
 ///
+/// Usable for only one event queue.
+///
 /// It's provides methods to connect/subscribe to the different events types
 /// `namedEvents` and `customEvents` and parses the events messages.
 class EventSystemConnector {
   /// Creates a new [EventSystemConnector] with a [s3iCore] and
-  /// a [brokerInterface].
-  EventSystemConnector(this.s3iCore, this.brokerInterface) {
+  /// a [brokerInterface] connected to the "normal" exchange.
+  ///
+  /// The [brokerInterface] is optional because it's only used for custom
+  /// events.
+  EventSystemConnector(this.s3iCore, {this.brokerInterface}) {
     _eventBrokerConnector = getActiveBrokerEventConnector(s3iCore.authManager);
     _eventBrokerConnector
       ..subscribeEventMessageReceived((EventMessage event) {
         if (_eventCallbacks.containsKey(event.topic)) {
-          _eventCallbacks[event.topic]!(event);
+          for (final Function(EventMessage event) callbackF
+          in _eventCallbacks[event.topic]!) {
+            callbackF(event);
+          }
         }
       })
       ..subscribeConsumingFailed((String endpoint, Exception exception) {
         onErrorCallback(S3IException(exception.toString()));
       });
-    brokerInterface.subscribeEventSubscriptionResponseReceived(
-        (EventSubscriptionResponse response) {
-      if (!response.ok) {
-        // TODO(poq): custom event type with topic as member
-        onErrorCallback(S3IException('CustomEventSubscription failed'));
-      }
-    });
+    if (brokerInterface != null) {
+      brokerInterface!.subscribeEventSubscriptionResponseReceived(
+              (EventSubscriptionResponse response) {
+            if (!response.ok) {
+              // TODO(poq): custom event type with topic as member
+              onErrorCallback(S3IException('CustomEventSubscription failed'));
+            }
+          });
+    }
   }
 
   /// The [S3ICore] used to connect to the Config REST API.
@@ -38,7 +48,7 @@ class EventSystemConnector {
 
   /// The [ActiveBrokerInterface] used to communicate with the publisher
   /// via the normal direct exchange.
-  final ActiveBrokerInterface brokerInterface;
+  final ActiveBrokerInterface? brokerInterface;
 
   /// This callback is invoked if an error occurs during subscription/message
   /// receiving.
@@ -50,13 +60,16 @@ class EventSystemConnector {
   late final ActiveBrokerInterface _eventBrokerConnector;
 
   /// Stores the topics of the subscribed events and the matching callbacks.
-  final Map<String, Function(EventMessage event)> _eventCallbacks =
-      <String, Function(EventMessage event)>{};
+  Map<String, List<Function(EventMessage event)>> _eventCallbacks =
+  <String, List<Function(EventMessage event)>>{};
+
+  /// The endpoint to which the [_eventBrokerConnector] is connected.
+  Endpoint? _endpoint;
 
   /// Handles the complete process to receive custom events from an other thing.
   ///
   /// The [brokerInterface] should be connected to the [ownQueue] before
-  /// calling this!
+  /// calling this! Throws [S3IException] if [brokerInterface] is NULL.
   ///
   /// Returns the topic of this specific event. If an exception occurs,
   /// [onErrorCallback] is called.
@@ -70,36 +83,51 @@ class EventSystemConnector {
   /// - send a [EventSubscriptionRequest] to the thing
   Future<String> subscribeCustomEvent(String publisherThingId,
       {required String publisherNormalQueue,
-      required String ownQueue,
-      required RQLQuery filter,
-      required List<String> attributePaths,
-      required Function(EventMessage event) eventCallback}) async {
+        required String ownQueue,
+        required RQLQuery filter,
+        required List<String> attributePaths,
+        required Function(EventMessage event) eventCallback}) async {
+    if (brokerInterface == null) {
+      throw S3IException('Missing brokerInterface in subscribeCustomEvent');
+    }
     final String thisThingId = s3iCore.authManager.clientIdentity.id;
     final String eventHash = md5
         .convert(
-            utf8.encode(filter.generateString() + attributePaths.toString()))
+        utf8.encode(filter.generateString() + attributePaths.toString()))
         .toString();
     final String eventTopic = '$publisherThingId.$eventHash';
-    await subscribeNamedEvent(publisherThingId,
-        eventTopic: eventTopic, eventCallback: eventCallback);
+    //await subscribeNamedEvent(publisherThingId,
+    //    eventTopic: {eventTopic}, eventCallback: eventCallback);
+    //TDOD: change!
     final EventSubscriptionRequest request = EventSubscriptionRequest(
         receivers: <String>{publisherThingId},
         sender: thisThingId,
         replyToEndpoint: ownQueue,
         filter: filter.generateString(),
         attributePaths: attributePaths);
-    brokerInterface.sendMessage(request, <String>{publisherNormalQueue});
+    brokerInterface!.sendMessage(request, <String>{publisherNormalQueue});
     return eventTopic;
   }
 
   /// Creates a queue binding to the given [eventTopic] and starts consuming.
   Future<void> subscribeNamedEvent(String publisherThingId,
-      {required String eventTopic,
-      required Function(EventMessage event) eventCallback}) async {
+      {required Map<String, List<Function(EventMessage event)>> events}) async {
     final String thisThingId = s3iCore.authManager.clientIdentity.id;
-    _eventCallbacks[eventTopic] = eventCallback;
-    final Endpoint endpoint =
-        await s3iCore.createEventQueueBinding(thisThingId, eventTopic);
-    await _eventBrokerConnector.startConsuming(endpoint.endpoint);
+    //TODO: change!
+    _eventCallbacks = events;
+    _endpoint = await s3iCore.createEventQueueBinding(
+        thisThingId, events.keys.toList());
+    await _eventBrokerConnector.startConsuming(_endpoint!.endpoint);
+  }
+
+  // TODO(poq): add method for unsubscribe specific events
+
+  /// Shuts down the connection to the broker. Currently the broker queue is
+  /// deleted too (the REST-API creates queues with `auto_delete = true`).
+  void stopConsumingEvents() {
+    if (_endpoint != null) {
+      _eventBrokerConnector.stopConsuming(_endpoint!.endpoint);
+      _eventCallbacks.clear();
+    }
   }
 }
