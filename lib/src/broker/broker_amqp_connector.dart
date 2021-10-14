@@ -193,6 +193,7 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// Connects to the Broker if there is no connection open at the time.
   @override
   Future<void> startConsuming(String endpoint) async {
+    if (_endpointConsumer.containsKey(endpoint)) return;
     if (_amqpClient == null || _channel == null || _exchange == null) {
       if (_inBrokerConstruction) {
         notifyConsumingFailed(endpoint, S3IException('invalid broker state'));
