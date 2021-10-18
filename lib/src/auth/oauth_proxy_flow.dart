@@ -123,60 +123,86 @@ class OAuthProxyFlow extends AuthenticationManager {
     }
     //full flow
     _invalidateLoginState();
+    final Uri pollingUrl = await _initializeOAuthProxy();
+    final http.Client pickUpClient = http.Client();
+    for (int i = 0; i < maxRetryPickup; i++) {
+      final http.Response response = await pickUpClient.get(pollingUrl);
+      if (response.statusCode != 200)
+      {
+        pickUpClient.close();
+        throw NetworkResponseException(response);
+      }
+      try {
+        _parseAndSetTokenResponse(response.body);
+      } catch (e) {
+        //answer doesn't includes the needed tokens
+        await Future<dynamic>.delayed(
+            Duration(milliseconds: retryWaitingTimeMilliSec));
+      }
+      //_accessToken and _refreshToken should be
+      // valid if this code is reached
+      if (onNewRefreshToken != null) onNewRefreshToken!(_refreshToken!);
+      if (onAuthSuccess != null) onAuthSuccess!(_accessToken!);
+      pickUpClient.close();
+      return _accessToken!;
+    }
+    // TODO(poq): test _accessToken.isNotExpired
+    pickUpClient.close();
+    throw MaxRetryException('Can not receive token bundle from OAuthProxy');
+  }
+
+  Future<Uri> _initializeOAuthProxy() async {
     String authInit = '$authProxyBase${'/initialize/${clientIdentity.id}/'
         '${clientIdentity.secret}'}';
-    if (scopes.isNotEmpty) authInit += '/${scopes.join(' ')}';
-    //send start auth request to oAuthProxy
-    http.Response response = await http.get(Uri.parse(authInit));
-    if (response.statusCode != 200) throw NetworkResponseException(response);
+    if (scopes.isNotEmpty) {
+      authInit += '/${scopes.join(' ')}';
+    }
+    final http.Response response = await http.get(Uri.parse(authInit));
+    if (response.statusCode != 200) {
+      throw NetworkResponseException(response);
+    }
+
+    late Map<String, dynamic> initBody;
+
     try {
-      final Map<String, dynamic> initBody =
-          jsonDecode(response.body) as Map<String, dynamic>;
-      //check response
-      if (initBody['redirect_url'] != null &&
-          initBody['proxy_user_identifier'] != null &&
-          initBody['proxy_secret'] != null) {
-        //build url for interaction with the user and send it to the application
-        final String authenticatorUrl =
-            authProxyBase + initBody['redirect_url'].toString();
-        await openUrlCallback(Uri.parse(authenticatorUrl));
-        //start polling at pickup endpoint
-        final String pollingUrl = "$authProxyBase${"/pickup/"
-            "${initBody["proxy_user_identifier"].toString()}/"
-            "${initBody["proxy_secret"].toString()}"}";
-        final http.Client pickUpClient = http.Client();
-        for (int i = 0; i < maxRetryPickup; i++) {
-          response = await pickUpClient.get(Uri.parse(pollingUrl));
-          await Future<dynamic>.delayed(
-              Duration(milliseconds: retryWaitingTimeMilliSec));
-          if (response.statusCode != 200)
-            throw NetworkResponseException(response);
-          try {
-            _parseAndSetTokenResponse(response.body);
-            //_accessToken and _refreshToken should be
-            // valid if this code is reached
-            if (onNewRefreshToken != null) onNewRefreshToken!(_refreshToken!);
-            if (onAuthSuccess != null) onAuthSuccess!(_accessToken!);
-            return _accessToken!;
-            // TODO(poq): test _accessToken.isNotExpired
-          } catch (e) {
-            //answer doesn't includes the needed tokens
-          }
-        }
-      } else {
-        throw InvalidJsonSchemaException(
-            'S3I-OAuthProxy returned invalid json', response.body);
-      }
+      //send start auth request to oAuthProxy
+      initBody = jsonDecode(response.body) as Map<String, dynamic>;
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
-          'S3I-OAuthProxy returned invalid json (${e.toString()})',
+          'S3I-OAuthProxy returned invalid json, expected object '
+          '(${e.toString()})',
           response.body);
     } on FormatException catch (e) {
       throw InvalidJsonSchemaException(
           'S3I-OAuthProxy returned invalid json (${e.toString()})',
           response.body);
     }
-    throw MaxRetryException('Can not receive token bundle from OAuthProxy');
+
+    //check response
+    if (initBody['redirect_url'] != null &&
+        initBody['proxy_user_identifier'] != null &&
+        initBody['proxy_secret'] != null) {
+      //build url for interaction with the user and send it to the application
+      // Value Error
+      final String authenticatorUrl =
+          authProxyBase + initBody['redirect_url'].toString();
+      // Could return null
+      await openUrlCallback(Uri.parse(authenticatorUrl));
+      //start polling at pickup endpoint
+      // Value error
+      final String pollingUrl = "$authProxyBase${"/pickup/"
+          "${initBody["proxy_user_identifier"].toString()}/"
+          "${initBody["proxy_secret"].toString()}"}";
+
+      return Uri.parse(pollingUrl);
+    }
+    else
+    {
+      throw InvalidJsonSchemaException(
+          'S3I-OAuthProxy missing at least one required fields ("redirect_url",'
+              ' "proxy_user_identifier", "proxy_secret")',
+          response.body);
+    }
   }
 
   @override
@@ -214,24 +240,25 @@ class OAuthProxyFlow extends AuthenticationManager {
   ///
   /// Could throw [InvalidJsonSchemaException] and [FormatException].
   void _parseAndSetTokenResponse(String tokenBundle) {
+    late Map<String, dynamic> jsonB;
     try {
-      final Map<String, dynamic> jsonB =
-          jsonDecode(tokenBundle) as Map<String, dynamic>;
-      if (jsonB[KeycloakKeys.accessToken] != null &&
-          jsonB[KeycloakKeys.refreshToken] != null) {
-        try {
-          _accessToken = AccessToken(jsonB[KeycloakKeys.accessToken] as String);
-          _refreshToken =
-              RefreshToken(jsonB[KeycloakKeys.refreshToken] as String);
-        } on TypeError {
-          throw const FormatException('Tokens in bundle are not Strings');
-        }
-        return;
-      }
+      jsonB = jsonDecode(tokenBundle) as Map<String, dynamic>;
     } on TypeError {
       throw const FormatException('Token bundle could not be parsed to Map');
     }
-    throw InvalidJsonSchemaException(
-        'ParseTokenResponseBody error', tokenBundle);
+    if (jsonB[KeycloakKeys.accessToken] == null ||
+        jsonB[KeycloakKeys.refreshToken] == null)
+    {
+      throw InvalidJsonSchemaException(
+          'ParseTokenResponseBody error', tokenBundle);
+    }
+    try {
+      _accessToken = AccessToken(jsonB[KeycloakKeys.accessToken] as String);
+      _refreshToken =
+          RefreshToken(jsonB[KeycloakKeys.refreshToken] as String);
+    } on TypeError {
+      throw const FormatException('Tokens in bundle are not Strings');
+    }
+    return;
   }
 }
