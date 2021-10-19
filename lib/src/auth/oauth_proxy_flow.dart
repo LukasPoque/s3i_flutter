@@ -134,12 +134,13 @@ class OAuthProxyFlow extends AuthenticationManager {
       }
       try {
         _parseAndSetTokenResponse(response.body);
+        //_accessToken and _refreshToken should be
       } catch (e) {
         //answer doesn't includes the needed tokens
         await Future<dynamic>.delayed(
             Duration(milliseconds: retryWaitingTimeMilliSec));
+        continue;
       }
-      //_accessToken and _refreshToken should be
       // valid if this code is reached
       if (onNewRefreshToken != null) onNewRefreshToken!(_refreshToken!);
       if (onAuthSuccess != null) onAuthSuccess!(_accessToken!);
