@@ -94,7 +94,7 @@ class OAuthProxyFlow extends AuthenticationManager {
         return _accessToken!;
       }
     }
-    if(_refreshToken != null) {
+    if (_refreshToken != null) {
       //check if _refreshToken is valid and try to get a new access token
       if (_refreshToken!.isNotExpired(timeBufferInSeconds: tokenValidBuffer)) {
         final http.Response response =
@@ -127,8 +127,7 @@ class OAuthProxyFlow extends AuthenticationManager {
     final http.Client pickUpClient = http.Client();
     for (int i = 0; i < maxRetryPickup; i++) {
       final http.Response response = await pickUpClient.get(pollingUrl);
-      if (response.statusCode != 200)
-      {
+      if (response.statusCode != 200) {
         pickUpClient.close();
         throw NetworkResponseException(response);
       }
@@ -196,12 +195,10 @@ class OAuthProxyFlow extends AuthenticationManager {
           "${initBody["proxy_secret"].toString()}"}";
 
       return Uri.parse(pollingUrl);
-    }
-    else
-    {
+    } else {
       throw InvalidJsonSchemaException(
           'S3I-OAuthProxy missing at least one required fields ("redirect_url",'
-              ' "proxy_user_identifier", "proxy_secret")',
+          ' "proxy_user_identifier", "proxy_secret")',
           response.body);
     }
   }
@@ -248,15 +245,13 @@ class OAuthProxyFlow extends AuthenticationManager {
       throw const FormatException('Token bundle could not be parsed to Map');
     }
     if (jsonB[KeycloakKeys.accessToken] == null ||
-        jsonB[KeycloakKeys.refreshToken] == null)
-    {
+        jsonB[KeycloakKeys.refreshToken] == null) {
       throw InvalidJsonSchemaException(
           'ParseTokenResponseBody error', tokenBundle);
     }
     try {
       _accessToken = AccessToken(jsonB[KeycloakKeys.accessToken] as String);
-      _refreshToken =
-          RefreshToken(jsonB[KeycloakKeys.refreshToken] as String);
+      _refreshToken = RefreshToken(jsonB[KeycloakKeys.refreshToken] as String);
     } on TypeError {
       throw const FormatException('Tokens in bundle are not Strings');
     }
