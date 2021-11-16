@@ -64,8 +64,9 @@ class PolicySubject implements JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    if (expiringTimestamp != null)
+    if (expiringTimestamp != null) {
       newJson[DittoKeys.expiry] = expiringTimestamp!.toIso8601String();
+    }
     if (type != null) newJson[DittoKeys.type] = type;
     return newJson;
   }

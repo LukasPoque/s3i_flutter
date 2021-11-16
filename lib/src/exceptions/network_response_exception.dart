@@ -14,8 +14,9 @@ class NetworkResponseException extends S3IException {
   @override
   String toString() {
     String error = 'NetworkResponseException: ${networkResponse.statusCode}';
-    if (networkResponse.reasonPhrase != null)
+    if (networkResponse.reasonPhrase != null) {
       error += ' | ${networkResponse.reasonPhrase!}';
+    }
     return error;
   }
 }

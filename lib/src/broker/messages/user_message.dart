@@ -64,8 +64,9 @@ class UserMessage extends Message {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = super.toJson();
     newJson[BrokerKeys.messageType] = BrokerKeys.userMessage;
-    if (attachment != null)
+    if (attachment != null) {
       newJson[BrokerKeys.attachments] = attachment!.toJson();
+    }
     if (subject != null) newJson[BrokerKeys.subject] = subject;
     if (text != null) newJson[BrokerKeys.text] = text;
     return newJson;

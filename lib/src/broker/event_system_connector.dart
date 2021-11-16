@@ -24,7 +24,7 @@ class EventSystemConnector {
       ..subscribeEventMessageReceived((EventMessage event) {
         if (_eventCallbacks.containsKey(event.topic)) {
           for (final Function(EventMessage event) callbackF
-          in _eventCallbacks[event.topic]!) {
+              in _eventCallbacks[event.topic]!) {
             callbackF(event);
           }
         }
@@ -34,12 +34,12 @@ class EventSystemConnector {
       });
     if (brokerInterface != null) {
       brokerInterface!.subscribeEventSubscriptionResponseReceived(
-              (EventSubscriptionResponse response) {
-            if (!response.ok) {
-              // TODO(poq): custom event type with topic as member
-              onErrorCallback(S3IException('CustomEventSubscription failed'));
-            }
-          });
+          (EventSubscriptionResponse response) {
+        if (!response.ok) {
+          // TODO(poq): custom event type with topic as member
+          onErrorCallback(S3IException('CustomEventSubscription failed'));
+        }
+      });
     }
   }
 
@@ -61,7 +61,7 @@ class EventSystemConnector {
 
   /// Stores the topics of the subscribed events and the matching callbacks.
   Map<String, List<Function(EventMessage event)>> _eventCallbacks =
-  <String, List<Function(EventMessage event)>>{};
+      <String, List<Function(EventMessage event)>>{};
 
   /// The endpoint to which the [_eventBrokerConnector] is connected.
   Endpoint? _endpoint;
@@ -83,17 +83,17 @@ class EventSystemConnector {
   /// - send a [EventSubscriptionRequest] to the thing
   Future<String> subscribeCustomEvent(String publisherThingId,
       {required String publisherNormalQueue,
-        required String ownQueue,
-        required RQLQuery filter,
-        required List<String> attributePaths,
-        required Function(EventMessage event) eventCallback}) async {
+      required String ownQueue,
+      required RQLQuery filter,
+      required List<String> attributePaths,
+      required Function(EventMessage event) eventCallback}) async {
     if (brokerInterface == null) {
       throw S3IException('Missing brokerInterface in subscribeCustomEvent');
     }
     final String thisThingId = s3iCore.authManager.clientIdentity.id;
     final String eventHash = md5
         .convert(
-        utf8.encode(filter.generateString() + attributePaths.toString()))
+            utf8.encode(filter.generateString() + attributePaths.toString()))
         .toString();
     final String eventTopic = '$publisherThingId.$eventHash';
     //await subscribeNamedEvent(publisherThingId,
@@ -113,7 +113,7 @@ class EventSystemConnector {
   Future<void> subscribeNamedEvent(String publisherThingId,
       {required Map<String, List<Function(EventMessage event)>> events}) async {
     final String thisThingId = s3iCore.authManager.clientIdentity.id;
-    //TODO: change!
+    // TODO(poq): change!
     _eventCallbacks = events;
     _endpoint = await s3iCore.createEventQueueBinding(
         thisThingId, events.keys.toList());

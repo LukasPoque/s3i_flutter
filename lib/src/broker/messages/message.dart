@@ -52,12 +52,15 @@ abstract class Message extends JsonSerializableObject {
     final Map<String, dynamic> newJson = <String, dynamic>{};
     newJson[BrokerKeys.identifier] = _identifier;
     newJson[BrokerKeys.sender] = sender;
-    if (receivers.isNotEmpty)
+    if (receivers.isNotEmpty) {
       newJson[BrokerKeys.receivers] = receivers.toList();
-    if (replyingToMessage != null)
+    }
+    if (replyingToMessage != null) {
       newJson[BrokerKeys.replyingToMessage] = replyingToMessage;
-    if (replyToEndpoint != null)
+    }
+    if (replyToEndpoint != null) {
       newJson[BrokerKeys.replyToEndpoint] = replyToEndpoint;
+    }
     return newJson;
   }
 
