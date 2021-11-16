@@ -209,8 +209,7 @@ class S3ICore {
   /// [NetworkResponseException] if the received status code is not 201. Throws
   /// a [ResponseParsingException] if something went wrong during the parsing
   /// to an [Endpoint].
-  Future<Endpoint> createEventQueueBinding(
-      String thingId, List<String> topic,
+  Future<Endpoint> createEventQueueBinding(String thingId, List<String> topic,
       {int queueLength = 0}) async {
     final Map<String, dynamic> requestBody = <String, dynamic>{'topic': topic};
     if (queueLength > 0) {
