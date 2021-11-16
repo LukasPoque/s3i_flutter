@@ -103,8 +103,9 @@ class KeycloakClientRepresentation extends JsonSerializableObject {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> newJson = <String, dynamic>{};
-    if (optionalClientScopes != null)
+    if (optionalClientScopes != null) {
       newJson['optionalClientScopes'] = optionalClientScopes;
+    }
     if (redirectUris != null) newJson['redirectUris'] = redirectUris;
     return newJson;
   }

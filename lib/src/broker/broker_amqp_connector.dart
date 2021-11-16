@@ -59,8 +59,9 @@ ActiveBrokerInterface getActiveBrokerEventConnector(
     AuthenticationManager authManager,
     {Map<String, dynamic> args = const <String, dynamic>{}}) {
   if (args.containsKey('exchangeName')) args['exchangeName'] = 'eventExchange';
-  if (args.containsKey('exchangeType'))
+  if (args.containsKey('exchangeType')) {
     args['exchangeType'] = ExchangeType.TOPIC;
+  }
   return getActiveBrokerDefaultConnector(authManager, args: args);
 }
 
