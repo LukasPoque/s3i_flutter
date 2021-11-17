@@ -13,7 +13,10 @@ class ClientIdentity {
   /// Creates a [ClientIdentity] with the [id] and the [secret] stored in the
   /// [jsonMap].
   ///
-  /// Could throw an [InvalidJsonSchemaException] if
+  /// This is used to parse the answer from the S3I-Config.
+  ///
+  /// Could throw an [InvalidJsonSchemaException] if an attribute is not a valid
+  /// String.
   factory ClientIdentity.fromJson(Map<String, dynamic> jsonMap) {
     try {
       String id;
