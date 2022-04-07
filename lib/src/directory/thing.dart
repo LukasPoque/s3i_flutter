@@ -155,27 +155,35 @@ class Thing extends Entry {
     newJson[DittoKeys.policyId] = id;
     final Map<String, dynamic> attributesMap = <String, dynamic>{};
     if (name != null) attributesMap[DirectoryKeys.name] = name;
-    if (thingType != null)
+    if (thingType != null) {
       attributesMap[DirectoryKeys.thingType] = _thingTypeToString(thingType!);
+    }
     if (dataModel != null) attributesMap[DirectoryKeys.dataModel] = dataModel;
     if (publicKey != null) attributesMap[DirectoryKeys.publicKey] = publicKey;
-    if (allEndpoints != null)
+    if (allEndpoints != null) {
       attributesMap[DirectoryKeys.allEndpoints] =
           allEndpoints!.map((Endpoint e) => e.endpoint).toList();
-    if (defaultEndpoint != null)
+    }
+    if (defaultEndpoint != null) {
       attributesMap[DirectoryKeys.defaultEndpoint] = defaultEndpoint;
-    if (defaultHMI != null)
+    }
+    if (defaultHMI != null) {
       attributesMap[DirectoryKeys.defaultHMI] = defaultHMI;
-    if (location != null)
+    }
+    if (location != null) {
       attributesMap[DirectoryKeys.location] = location!.toJson();
+    }
     if (ownedBy != null) attributesMap[DirectoryKeys.ownedBy] = ownedBy;
-    if (administratedBy != null)
+    if (administratedBy != null) {
       attributesMap[DirectoryKeys.administratedBy] = administratedBy;
+    }
     if (usedBy != null) attributesMap[DirectoryKeys.usedBy] = usedBy;
-    if (represents != null)
+    if (represents != null) {
       attributesMap[DirectoryKeys.represents] = represents;
-    if (thingStructure != null)
+    }
+    if (thingStructure != null) {
       attributesMap[DirectoryKeys.thingStructure] = thingStructure!.toJson();
+    }
     if (attributesMap.isNotEmpty) newJson[DittoKeys.attributes] = attributesMap;
     return newJson;
   }

@@ -23,8 +23,9 @@ String assembleQuery(String base,
     path += '?';
     if (rqlFilter != null) {
       path += 'filter=${rqlFilter.generateString()}';
-      if (namespaceQuery != null || fieldQuery != null || optionQuery != null)
+      if (namespaceQuery != null || fieldQuery != null || optionQuery != null) {
         path += '&';
+      }
     }
     if (namespaceQuery != null) {
       path += namespaceQuery.generateString();

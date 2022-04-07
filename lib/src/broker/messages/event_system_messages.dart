@@ -14,19 +14,20 @@ class EventSubscriptionRequest extends Message {
   ///
   /// Creates empty defaults for [receivers], [sender], [filter]
   /// and [attributePaths].
-  EventSubscriptionRequest({String? messageId,
-    Set<String> receivers = const <String>{},
-    String sender = '',
-    String? replyingToMessage,
-    String? replyToEndpoint,
-    this.filter = '',
-    this.attributePaths = const <String>[]})
+  EventSubscriptionRequest(
+      {String? messageId,
+      Set<String> receivers = const <String>{},
+      String sender = '',
+      String? replyingToMessage,
+      String? replyToEndpoint,
+      this.filter = '',
+      this.attributePaths = const <String>[]})
       : super(
-      messageId: messageId,
-      receivers: receivers,
-      sender: sender,
-      replyingToMessage: replyingToMessage,
-      replyToEndpoint: replyToEndpoint);
+            messageId: messageId,
+            receivers: receivers,
+            sender: sender,
+            replyingToMessage: replyingToMessage,
+            replyToEndpoint: replyToEndpoint);
 
   /// Creates a [EventSubscriptionRequest] with the information stored in
   /// the [json].
@@ -47,7 +48,7 @@ class EventSubscriptionRequest extends Message {
         ..attributePaths = json.containsKey(BrokerKeys.attributePaths)
             ? json[BrokerKeys.attributePaths] as List<String>
             : throw JsonMissingKeyException(
-            BrokerKeys.attributePaths, json.toString());
+                BrokerKeys.attributePaths, json.toString());
       return msg;
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
@@ -82,19 +83,20 @@ class EventSubscriptionResponse extends Message {
   ///
   /// Creates empty defaults for [receivers], [sender], [topic] and sets [ok]
   /// to false.
-  EventSubscriptionResponse({String? messageId,
-    Set<String> receivers = const <String>{},
-    String sender = '',
-    String? replyingToMessage,
-    String? replyToEndpoint,
-    this.topic = '',
-    this.ok = false})
+  EventSubscriptionResponse(
+      {String? messageId,
+      Set<String> receivers = const <String>{},
+      String sender = '',
+      String? replyingToMessage,
+      String? replyToEndpoint,
+      this.topic = '',
+      this.ok = false})
       : super(
-      messageId: messageId,
-      receivers: receivers,
-      sender: sender,
-      replyingToMessage: replyingToMessage,
-      replyToEndpoint: replyToEndpoint);
+            messageId: messageId,
+            receivers: receivers,
+            sender: sender,
+            replyingToMessage: replyingToMessage,
+            replyToEndpoint: replyToEndpoint);
 
   /// Creates a [EventSubscriptionResponse] with the information stored in the
   /// [json].
@@ -148,21 +150,22 @@ class EventMessage extends Message {
   ///
   /// Creates empty defaults for [receivers], [sender], [topic],
   /// [timestamp] to the epoch start and [content] to an empty map.
-  EventMessage({String? messageId,
-    Set<String> receivers = const <String>{},
-    String sender = '',
-    String? replyingToMessage,
-    String? replyToEndpoint,
-    this.topic = '',
-    DateTime? timestampEvent,
-    this.content = const <String, dynamic>{}})
+  EventMessage(
+      {String? messageId,
+      Set<String> receivers = const <String>{},
+      String sender = '',
+      String? replyingToMessage,
+      String? replyToEndpoint,
+      this.topic = '',
+      DateTime? timestampEvent,
+      this.content = const <String, dynamic>{}})
       : timestamp = timestampEvent ?? DateTime(1970),
         super(
-          messageId: messageId,
-          receivers: receivers,
-          sender: sender,
-          replyingToMessage: replyingToMessage,
-          replyToEndpoint: replyToEndpoint);
+            messageId: messageId,
+            receivers: receivers,
+            sender: sender,
+            replyingToMessage: replyingToMessage,
+            replyToEndpoint: replyToEndpoint);
 
   /// Creates a [EventMessage] with the information stored in the [json].
   ///
@@ -181,13 +184,13 @@ class EventMessage extends Message {
             : throw JsonMissingKeyException(BrokerKeys.topic, json.toString())
         ..timestamp = json.containsKey(BrokerKeys.timestamp)
             ? DateTime.fromMillisecondsSinceEpoch(
-            json[BrokerKeys.timestamp] as int)
+                json[BrokerKeys.timestamp] as int)
             : throw JsonMissingKeyException(
-            BrokerKeys.timestamp, json.toString())
+                BrokerKeys.timestamp, json.toString())
         ..content = json.containsKey(BrokerKeys.content)
             ? json[BrokerKeys.content] as Map<String, dynamic>
             : throw JsonMissingKeyException(
-            BrokerKeys.content, json.toString());
+                BrokerKeys.content, json.toString());
       return msg;
     } on TypeError catch (e) {
       throw InvalidJsonSchemaException(
