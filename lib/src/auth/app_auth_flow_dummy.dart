@@ -21,14 +21,6 @@ class AppAuthFlow extends AuthenticationManager {
       : super(clientIdentity,
             scopes: scopes, discoveryEndpoint: discoveryEndpoint);
 
-  /// The last issued [AccessToken] which matches the [clientIdentity] and
-  /// [scopes].
-  AccessToken? _accessToken;
-
-  /// The last issued [RefreshToken] which matches the [clientIdentity] and
-  /// [scopes].
-  RefreshToken? _refreshToken;
-
   /// The scheme used to redirect to after the login.
   ///
   /// Needs to be the same in here, in the app (android and ios config files)
@@ -44,7 +36,7 @@ class AppAuthFlow extends AuthenticationManager {
   /// the [onNewRefreshToken] callback.
   // ignore: avoid_setters_without_getters
   set refreshToken(RefreshToken token) {
-    _refreshToken = token;
+    throw UnsupportedError('AppAuthFlow is not available for this platform');
   }
 
   /// Returns a valid [AccessToken] for the [clientIdentity]

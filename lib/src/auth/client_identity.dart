@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
+import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 
 /// Represents a simple `Client` in the OpenID-Connect terms for authentication
 /// at the S3I-IdentityProvider.
