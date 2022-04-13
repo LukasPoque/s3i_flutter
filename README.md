@@ -269,6 +269,9 @@ the other parts of this package where they are used. The folder includes classes
 Currently only the following `AuthenticationManager` implementations are available: 
 - `OAuthProxyFlow`: This implementation uses the S3I-OAuthProxy to obtain an access and refresh token.
   But it doesn't refreshes the tokens automatically, only only if `getAccessToken` is called and the previous token is expired.
+- `AppAuthFlow`: This uses the AppAuth client SDK for native apps through the [FlutterAppAuth Package](https://github.com/MaikuB/flutter_appauth).
+  Like the `OAuthProxyFlow` it doesn't refresh the tokens automatically, only only if `getAccessToken` is called and the previous token is expired.
+  Since the package only supports iOS and Android, the `AppAuthFlow` is only available on those platforms.
 
 ### Broker
 

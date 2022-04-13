@@ -1,6 +1,8 @@
 library s3i_flutter;
 
 //auth
+export 'src/auth/app_auth_flow.dart'
+    if (dart.library.js) 'src/auth/app_auth_flow_dummy.dart';
 export 'src/auth/authentication_manager.dart';
 export 'src/auth/client_identity.dart';
 export 'src/auth/keycloak_client_representation.dart';
