@@ -1,5 +1,6 @@
 import 'package:s3i_flutter/src/directory/dir_object.dart';
 import 'package:s3i_flutter/src/directory/endpoint.dart';
+import 'package:s3i_flutter/src/directory/event.dart'; //TODO(Bek): Added Here
 import 'package:s3i_flutter/src/directory/location.dart';
 import 'package:s3i_flutter/src/entry.dart';
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
@@ -43,7 +44,7 @@ import 'package:s3i_flutter/src/utils/json_keys.dart';
 /// ```
 class Thing extends Entry {
   /// Creates a new [Thing] with the given [id].
-  Thing(String id) : super(id);
+  Thing(String id/*, {this.name, this.events}*/) : super(id);
 
   /// Creates a [Thing] from a decoded [json] entry.
   ///
@@ -89,6 +90,9 @@ class Thing extends Entry {
               ? Location.fromJson(
                   attributesMap[DirectoryKeys.location] as Map<String, dynamic>)
               : null
+          ..events = attributesMap.containsKey(DirectoryKeys.events) //TODO(Bek): Added
+            ? _createEventList(attributesMap[DirectoryKeys.events] as Map<String,dynamic>)
+              : null
           ..ownedBy = attributesMap[DirectoryKeys.ownedBy] as String?
           ..administratedBy =
               attributesMap[DirectoryKeys.administratedBy] as String?
@@ -129,6 +133,9 @@ class Thing extends Entry {
 
   /// The last know location of this thing.
   Location? location;
+
+  /// The Event(s) offered by this thing //TODO(Bek): Added here
+  List<EventObj>? events;
 
   /// The owner id of this thing (UUIDv4).
   ///
@@ -214,6 +221,11 @@ class Thing extends Entry {
 
   static List<Endpoint> _createEndpointList(List<dynamic> jsonList) {
     return jsonList.map((dynamic endP) => Endpoint(endP as String)).toList();
+  }
+
+  static List<EventObj> _createEventList(Map<String, dynamic> jsonMap)          //TODO(Bek): added
+  {
+    return jsonMap.entries.map((e) => EventObj.fromJson(e.key, e.value as Map<String,dynamic>)).toList();
   }
 }
 

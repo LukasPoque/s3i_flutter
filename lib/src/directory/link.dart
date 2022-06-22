@@ -8,7 +8,7 @@ import 'package:s3i_flutter/src/utils/json_keys.dart';
 /// Represents a `Link` in the S3I-Directory data model.
 class Link implements JsonSerializableObject {
   /// Creates a new [Link] with the [association] and an optional [target].
-  Link(this.association, {this.target});
+  Link(this.association, {this.target, this.classString});
 
   /// Creates a [Link] from a decoded [json] entry.
   ///
@@ -16,11 +16,20 @@ class Link implements JsonSerializableObject {
   /// could not be found in the json. Throws a [TypeError] if the target
   /// couldn't be parsed correctly.
   factory Link.fromJson(Map<String, dynamic> json) {
-    final String association = json.containsKey(DirectoryKeys.association)
+
+    final String? classString = json.containsKey(DirectoryKeys.classString)
+    ? json[DirectoryKeys.classString] as String
+        : null;
+
+    final String? association = json.containsKey(DirectoryKeys.association)
         ? json[DirectoryKeys.association] as String
-        : throw JsonMissingKeyException(
-            DirectoryKeys.association, json.toString());
-    final Link l = Link(association)
+        : null;
+    //if both are non-existing throw an exception
+    if(classString == null && association == null)
+      throw JsonMissingKeyException(
+          DirectoryKeys.association, json.toString());
+
+    final Link l = Link(association, classString: classString)
       ..target = json.containsKey(DirectoryKeys.target)
           ? DirObject.fromJson(
               json[DirectoryKeys.target] as Map<String, dynamic>)
@@ -31,7 +40,11 @@ class Link implements JsonSerializableObject {
   /// The type of the association between the [target] and the parent.
   ///
   /// This should be a fml4.0 key (most cases: `features`, `roles`).
-  final String association;
+  final String? association;
+
+  /// In case of the real Cantilever -> (... , Thingstructure-> link(Nr.9) -> ASSOSIATION , target -> link -> CLASS ,links
+  /// links may consist of further thingStructures and  have a class key instead of a assosiation? //TODO(Bek): check if this is a false model
+  String? classString;
 
   /// The target of this association.
   DirObject? target;
