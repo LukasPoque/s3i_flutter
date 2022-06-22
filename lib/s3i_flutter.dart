@@ -25,6 +25,9 @@ export 'src/directory/endpoint.dart';
 export 'src/directory/link.dart';
 export 'src/directory/location.dart';
 export 'src/directory/thing.dart';
+export 'src/directory/event.dart'; ///TODO(bek) added
+export 'src/directory/property.dart'; ///TODO(bek) added
+export 'src/directory/service.dart'; ///TODO(bek) added
 export 'src/directory/value.dart';
 
 //exception

@@ -128,6 +128,36 @@ class DirectoryKeys {
 
   ///value
   static const String value = 'value';
+
+  ///description
+  static const String description = 'description'; //TODO(BEK): added
+
+  ///schema
+  static const String schema = 'schema'; //TODO(BEK): added
+
+  ///properties
+  static const String properties = 'properties'; //TODO(BEK): added
+
+  ///events
+  static const String events = 'events'; //TODO(Bek): added
+
+  ///items
+  static const String items = 'items'; //TODO(Bek): added
+
+  ///serviceType
+  static const String serveiceType = 'serviceType'; //TODO(Bek): added
+
+  ///parameterTypes
+  static const String parameterTypes = 'parameterTypes'; //TODO(Bek): added
+
+  ///resultTypes
+  static const String resultTypes = 'resultTypes'; //TODO(Bek): added
+
+  ///endpoint
+  static const String endpoints = 'endpoints'; //TODO(Bek): added
+
+  ///services
+  static const String services = 'services'; //TODO(Bek): added
 }
 
 /// Stores universal string keys constants for the S3I-B protocol.
