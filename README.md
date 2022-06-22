@@ -32,7 +32,7 @@
 The S³I is a centralized infrastructure with currently five main services for the decentralized IoT of WH4.0 Things (Forestry4.0 Things) developed by the [KWH4.0](https://www.kwh40.de/).
 
 If you are not familiar with the S³I concepts, please read the 
-[KWH4.0-Standpunkt](https://www.kwh40.de/wp-content/uploads/2020/04/KWH40-Standpunkt-S3I-v2.0.pdf).
+[KWH4.0 Position Paper](https://www.kwh40.de/wp-content/uploads/2022/02/KWH40-Standpunkt-S3I-EN.pdf).
 
 For further information see the [KWH Glossar](https://www.kwh40.de/glossar/) and the other [Standpunkte](https://www.kwh40.de/veroffentlichungen/).
 
