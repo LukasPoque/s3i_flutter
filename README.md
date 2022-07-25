@@ -1,3 +1,10 @@
+# ⚠️ Important Note ⚠️
+
+This repository is not longer maintained. See the (original mirror) repository for further development: https://git.rwth-aachen.de/kwh40/s3i_flutter
+
+---
+
+
 <p align="center">
   <h1 align="center">S³I Flutter</h1>
 </p>
