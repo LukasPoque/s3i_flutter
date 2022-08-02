@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dart_amqp/dart_amqp.dart';
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
@@ -18,19 +19,20 @@ import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
 ///
 /// The [args] have defaults for the normal message communication in the S3I:
 /// - brokerHost = 'rabbitmq.s3i.vswf.dev',
-/// - port = 5672,
+/// - port = 5671,
 /// - virtualHost = 's3i',
 /// - maxConnectionAttempts = 3,
 /// - reconnectWaitTime = const Duration(milliseconds: 1500),
 /// - prefetchCount = -1,
 /// - exchangeName = 'demo.direct',
 /// - exchangeType = ExchangeType.DIRECT
+/// onBadCertificate returns always true
 ActiveBrokerInterface getActiveBrokerDefaultConnector(
     AuthenticationManager authManager,
     {Map<String, dynamic> args = const <String, dynamic>{}}) {
   final String brokerHost =
       args['brokerHost'] as String? ?? 'rabbitmq.s3i.vswf.dev';
-  final int port = args['port'] as int? ?? 5672;
+  final int port = args['port'] as int? ?? 5671;
   final String virtualHost = args['virtualHost'] as String? ?? 's3i';
   final int maxConnectionAttempts = args['maxConnectionAttempts'] as int? ?? 3;
   final Duration reconnectWaitTime = args['reconnectWaitTime'] as Duration? ??
@@ -48,7 +50,8 @@ ActiveBrokerInterface getActiveBrokerDefaultConnector(
       reconnectWaitTime: reconnectWaitTime,
       prefetchCount: prefetchCount,
       exchangeName: exchangeName,
-      exchangeType: exchangeType);
+      exchangeType: exchangeType,
+      onBadCertificate: (X509Certificate cert) => true);
 }
 
 /// Creates a new [BrokerAmqpConnector] configured to be used for the
@@ -83,7 +86,8 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
       required this.reconnectWaitTime,
       required this.prefetchCount,
       required this.exchangeName,
-      required this.exchangeType})
+      required this.exchangeType,
+      required this.onBadCertificate})
       : super(authManager);
 
   /// The host to connect to.
@@ -113,6 +117,10 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
   /// [here](https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges)
   /// for more information.
   final ExchangeType exchangeType;
+
+  /// This callback is triggered if the certificate of the connection
+  /// to the broker is invalid.
+  final bool Function(X509Certificate)? onBadCertificate;
 
   /// Stores all endpoints and their consumer queues.
   final Map<String, Consumer> _endpointConsumer = <String, Consumer>{};
@@ -249,6 +257,8 @@ class BrokerAmqpConnector extends ActiveBrokerInterface {
         port: port,
         virtualHost: virtualHost,
         authProvider: PlainAuthenticator(' ', token.originalToken),
+        tlsContext: SecurityContext(),
+        onBadCertificate: onBadCertificate,
         maxConnectionAttempts: maxConnectionAttempts,
         reconnectWaitTime: reconnectWaitTime);
     _amqpClient = Client(settings: setting);

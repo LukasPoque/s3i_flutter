@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:s3i_flutter/s3i_flutter.dart';
-import 'package:s3i_flutter/src/broker/messages/event_system_messages.dart';
 
 // TODO(poq): if the broker rest api supports other exchanges -> update
 

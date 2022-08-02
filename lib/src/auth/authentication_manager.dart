@@ -3,10 +3,15 @@ import 'package:s3i_flutter/src/auth/tokens.dart';
 
 /// Base class for the different authentication approaches to
 /// the S3I-IdentityProvider.
+///
+/// The S3I uses OpenID-Connect, therefore every subclass should handle the
+/// different token types and specific things like [scopes].
 abstract class AuthenticationManager {
-  /// Creates an [AuthenticationManager] with the given [clientIdentity] and
-  /// the given [scopes] (with an empty list as default).
-  AuthenticationManager(this.clientIdentity, {this.scopes = const <String>[]});
+  /// Creates an [AuthenticationManager] with the given [clientIdentity],
+  /// the given [scopes] (with an empty list as default) and a
+  /// [discoveryEndpoint] (default is an empty string).
+  AuthenticationManager(this.clientIdentity,
+      {this.scopes = const <String>[], this.discoveryEndpoint = ''});
 
   /// The identity used to issue tokens at the IdP.
   final ClientIdentity clientIdentity;
@@ -16,7 +21,10 @@ abstract class AuthenticationManager {
   /// Is an empty map as default.
   List<String> scopes;
 
-  // TODO(poq): save/use discovery endpoint (information)
+  /// The discovery endpoint of the identity provider,
+  ///
+  /// Is an empty string by default.
+  final String discoveryEndpoint;
 
   /// Returns a valid [AccessToken] for the [clientIdentity]
   /// which is at least valid for the time specified in [tokenValidBuffer].
@@ -34,6 +42,7 @@ abstract class AuthenticationManager {
 
   @override
   String toString() {
-    return 'AuthenticationManager($clientIdentity, $scopes)';
+    return 'AuthenticationManager'
+        '($clientIdentity, $scopes, $discoveryEndpoint)';
   }
 }

@@ -1,11 +1,20 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
-import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/auth/authentication_manager.dart';
+import 'package:s3i_flutter/src/auth/client_identity.dart';
 import 'package:s3i_flutter/src/auth/keycloak_client_representation.dart';
+import 'package:s3i_flutter/src/auth/tokens.dart';
+import 'package:s3i_flutter/src/directory/endpoint.dart';
+import 'package:s3i_flutter/src/directory/thing.dart';
+import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/exceptions/network_authentication_exception.dart';
+import 'package:s3i_flutter/src/exceptions/network_response_exception.dart';
 import 'package:s3i_flutter/src/exceptions/response_parsing_exception.dart';
+import 'package:s3i_flutter/src/exceptions/s3i_exception.dart';
+import 'package:s3i_flutter/src/policy/policy_entry.dart';
+import 'package:s3i_flutter/src/query/field_query.dart';
+import 'package:s3i_flutter/src/query/query_assembler.dart';
 import 'package:s3i_flutter/src/utils/json_keys.dart';
 
 /// The main communication class to the S3I.

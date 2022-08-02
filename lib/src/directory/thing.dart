@@ -1,8 +1,8 @@
-import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/directory/dir_object.dart';
 import 'package:s3i_flutter/src/directory/endpoint.dart';
 import 'package:s3i_flutter/src/directory/location.dart';
 import 'package:s3i_flutter/src/entry.dart';
+import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
 import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 import 'package:s3i_flutter/src/utils/json_keys.dart';
 

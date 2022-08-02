@@ -26,8 +26,12 @@ class OAuthProxyFlow extends AuthenticationManager {
       this.onNewRefreshToken,
       this.maxRetryPickup = 100,
       this.retryWaitingTimeMilliSec = 200,
-      List<String> scopes = const <String>[]})
-      : super(clientIdentity, scopes: scopes);
+      List<String> scopes = const <String>[],
+      String discoveryEndpoint = ''})
+      : super(clientIdentity,
+            scopes: scopes, discoveryEndpoint: discoveryEndpoint);
+
+  // TODO(poq): use the discovery endpoint
 
   /// The last issued [AccessToken] which matches the [clientIdentity] and
   /// [scopes].

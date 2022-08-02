@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:s3i_flutter/s3i_flutter.dart';
 import 'package:s3i_flutter/src/exceptions/invalid_json_schema_exception.dart';
+import 'package:s3i_flutter/src/exceptions/json_missing_key_exception.dart';
 
 /// Represents a simple `Client` in the OpenID-Connect terms for authentication
 /// at the S3I-IdentityProvider.
@@ -13,7 +13,10 @@ class ClientIdentity {
   /// Creates a [ClientIdentity] with the [id] and the [secret] stored in the
   /// [jsonMap].
   ///
-  /// Could throw an [InvalidJsonSchemaException] if
+  /// This is used to parse the answer from the S3I-Config.
+  ///
+  /// Could throw an [InvalidJsonSchemaException] if an attribute is not a valid
+  /// String.
   factory ClientIdentity.fromJson(Map<String, dynamic> jsonMap) {
     try {
       String id;
